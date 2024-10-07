@@ -8,13 +8,18 @@ namespace Comercial_Office.Controllers
 
         public async Task connect()
         {
-            //construir conexion
+            
             _connection = new HubConnectionBuilder().WithUrl("urlTest.com").Build();
-
             await _connection.StartAsync();
             Console.WriteLine("Conexion establecida con el hub");
 
-            //alguna funcion de enviar un mensaje
         }
+
+        public void message()
+        {
+            Console.WriteLine("Enviar data a un  hub");
+        }
+
+
     }
 }

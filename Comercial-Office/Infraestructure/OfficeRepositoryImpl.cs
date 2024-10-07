@@ -2,12 +2,12 @@
 
 namespace Comercial_Office.Infraestructure
 {
-    public class OfficeRepositroyImpl : IOfficeRepository
+    public class OfficeRepositoryImpl : IOfficeRepository
     {
 
         private IDictionary<string, Office> _Offices;
 
-        public OfficeRepositroyImpl() { 
+        public OfficeRepositoryImpl() { 
                 
             _Offices = new Dictionary<string, Office>();
 
