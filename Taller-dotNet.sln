@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API-Gateway", "API-Gateway\API-Gateway.csproj", "{9B217C6D-7D32-4326-9CE1-872A32BB7841}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monitor-Client", "Monitor-Client\Monitor-Client.csproj", "{CC460E53-BDAF-4DFB-988B-BEC90DA21D4B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9B217C6D-7D32-4326-9CE1-872A32BB7841}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B217C6D-7D32-4326-9CE1-872A32BB7841}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B217C6D-7D32-4326-9CE1-872A32BB7841}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B217C6D-7D32-4326-9CE1-872A32BB7841}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC460E53-BDAF-4DFB-988B-BEC90DA21D4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC460E53-BDAF-4DFB-988B-BEC90DA21D4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC460E53-BDAF-4DFB-988B-BEC90DA21D4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC460E53-BDAF-4DFB-988B-BEC90DA21D4B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
