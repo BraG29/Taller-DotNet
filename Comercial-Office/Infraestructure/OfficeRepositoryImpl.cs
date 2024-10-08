@@ -21,37 +21,50 @@ namespace Comercial_Office.Infraestructure
 
         public void Add(Office office)
         {
-            this._Offices.Add(office.Identificator,office);
+          
+            if (office.Identificator != null)
+            {
+                this._Offices.Add(office.Identificator, office);
+            }
+
+            throw new ArgumentNullException();
         }
 
         public void Update(Office office){
-            this._Offices[office.Identificator] = office;
+
+            if (office.Identificator != null)
+            {
+                this._Offices[office.Identificator] = office;
+            }
+            throw new KeyNotFoundException();
         }
         public void Delete(string id)
         {
-            this._Offices.Remove(id);
+            if(id != null)
+            {
+                this._Offices.Remove(id);
+            }
+
+            throw new KeyNotFoundException();
         }
 
         public Office GetOffice(string identificator)
         {
+            var office = this._Offices[identificator];
 
-            if (this._Offices != null)
+            if(office != null)
             {
-                Office office = this._Offices[identificator];
                 return office;
             }
-            
-            return null;
+            throw new KeyNotFoundException();
+           
         }
+
         public IList<Office> GetAll()
         {
-            if (this._Offices != null)
-            {
-                
-                return this._Offices.Values.ToList();
-            }
 
-            return null;
+            return this._Offices.Values.ToList();
+
         }
     }
 }

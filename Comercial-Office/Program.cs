@@ -1,6 +1,7 @@
 using Comercial_Office.Controllers;
 using Comercial_Office.Infraestructure;
 using Comercial_Office.Model;
+using Comercial_Office.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();
 
 //añadir controler singleton
-builder.Services.AddSingleton<IOfficeRepository, OfficeRepositroyImpl>();
+builder.Services.AddSingleton<IOfficeRepository, OfficeRepositoryImpl>();
+builder.Services.AddSingleton<IOfficeService, OfficeService>();
 
 builder.Services.AddControllers();
 
@@ -34,14 +36,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-
-//TODO
-/*
-Habilitar documentacion XML para swagger.
-Utilizar Optional.
-Crear queue al crear oficina.
-Implementar conexion con signalR hacia hub de ApiGateway
-Testear operaciones del controlador (crear y eliminar)
-Pulir DTOS
- */
