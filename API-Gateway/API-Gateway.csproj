@@ -21,6 +21,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Monitor-Client\Monitor-Client.csproj"/>
+        <ProjectReference Include="..\Comercial-Office\Comercial-Office.csproj"/>
     </ItemGroup>
     
     <ItemGroup>
