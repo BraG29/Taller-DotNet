@@ -6,10 +6,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <InvariantGlobalization>true</InvariantGlobalization>
         <UserSecretsId>aspnet-API_Gateway-99EDC231-E136-4FB3-9501-13E879993F45</UserSecretsId>
+        <IsAspireHost>true</IsAspireHost>
         <RootNamespace>API_Gateway</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Aspire.Hosting.AppHost" Version="8.2.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" NoWarn="NU1605"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.0" NoWarn="NU1605"/>
         <PackageReference Include="Microsoft.Identity.Web" Version="2.15.2"/>
@@ -17,6 +19,11 @@
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Monitor-Client\Monitor-Client.csproj"/>
+        <ProjectReference Include="..\Comercial-Office\Comercial-Office.csproj"/>
+    </ItemGroup>
+    
     <ItemGroup>
       <Folder Include="Controllers\" />
     </ItemGroup>

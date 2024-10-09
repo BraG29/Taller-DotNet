@@ -2,12 +2,12 @@
 
 namespace Comercial_Office.Infraestructure
 {
-    public class OfficeRepositroyImpl : IOfficeRepository
+    public class OfficeRepositoryImpl : IOfficeRepository
     {
 
         private IDictionary<string, Office> _Offices;
 
-        public OfficeRepositroyImpl() { 
+        public OfficeRepositoryImpl() { 
                 
             _Offices = new Dictionary<string, Office>();
 
@@ -21,37 +21,51 @@ namespace Comercial_Office.Infraestructure
 
         public void Add(Office office)
         {
-            this._Offices.Add(office.Identificator,office);
+          
+            if (office.Identificator == null)
+            {
+                throw new ArgumentNullException(); 
+            }
+
+            this._Offices.Add(office.Identificator, office);
+
         }
 
         public void Update(Office office){
-            this._Offices[office.Identificator] = office;
+
+            if (office.Identificator != null)
+            {
+                this._Offices[office.Identificator] = office;
+            }
+            throw new KeyNotFoundException();
         }
         public void Delete(string id)
         {
-            this._Offices.Remove(id);
+            if(id != null)
+            {
+                this._Offices.Remove(id);
+            }
+
+            throw new KeyNotFoundException();
         }
 
         public Office GetOffice(string identificator)
         {
+            Office office;
 
-            if (this._Offices != null)
+            if (this._Offices.TryGetValue(identificator, out office))
             {
-                Office office = this._Offices[identificator];
                 return office;
             }
-            
             return null;
+           
         }
+
         public IList<Office> GetAll()
         {
-            if (this._Offices != null)
-            {
-                
-                return this._Offices.Values.ToList();
-            }
 
-            return null;
+            return this._Offices.Values.ToList();
+
         }
     }
 }
