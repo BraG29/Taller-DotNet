@@ -17,7 +17,7 @@ namespace Comercial_Office.Services
 
         public void message()
         {
-            Console.WriteLine("Enviar data a un  hub");
+            Console.WriteLine("Enviar data a un  hub W.I.P");
         }
 
 

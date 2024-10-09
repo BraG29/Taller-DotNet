@@ -48,11 +48,11 @@ namespace Comercial_Office.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound("No se encontró la oficina: " + ex.Message);
+                return NotFound("Falló al encontrar: " + ex.Message);
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest("Identificador invalido o vacio" + ex.Message);
+                return BadRequest("Identificador invalido" + ex.Message);
             }
             catch (Exception ex)
             {
@@ -76,7 +76,20 @@ namespace Comercial_Office.Controllers
         [Route("createOffice")]
         public ActionResult<OfficeDTO> createOffice(OfficeDTO officeDTO)
         {
-            return Ok();
+            try
+            {
+                _officeService.CreateOffice(officeDTO);
+                return Ok("Oficina creada con exito.");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest("Fallo al crear la oficina: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocurrió un error inesperado." + ex.Message);
+            }
+
         }
 
         

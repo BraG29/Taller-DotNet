@@ -3,12 +3,12 @@
     public class OfficeDTO
     {
         public string? Identificator { get; set; }
-        public IList<AttentionPlaceDTO>? Posts { get; set; }
+        public IList<AttentionPlaceDTO>? AttentionPlaces { get; set; }
 
-        public OfficeDTO(string identificator, IList<AttentionPlaceDTO> posts)
+        public OfficeDTO(string identificator, IList<AttentionPlaceDTO> attentionPlaces)
         {
             this.Identificator = identificator;
-            this.Posts = posts;
+            this.AttentionPlaces = attentionPlaces;
         }
 
         public OfficeDTO() { }

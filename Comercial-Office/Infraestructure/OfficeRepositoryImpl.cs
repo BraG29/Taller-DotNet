@@ -22,12 +22,13 @@ namespace Comercial_Office.Infraestructure
         public void Add(Office office)
         {
           
-            if (office.Identificator != null)
+            if (office.Identificator == null)
             {
-                this._Offices.Add(office.Identificator, office);
+                throw new ArgumentNullException(); 
             }
 
-            throw new ArgumentNullException();
+            this._Offices.Add(office.Identificator, office);
+
         }
 
         public void Update(Office office){
@@ -50,13 +51,13 @@ namespace Comercial_Office.Infraestructure
 
         public Office GetOffice(string identificator)
         {
-            var office = this._Offices[identificator];
+            Office office;
 
-            if(office != null)
+            if (this._Offices.TryGetValue(identificator, out office))
             {
                 return office;
             }
-            throw new KeyNotFoundException();
+            return null;
            
         }
 
