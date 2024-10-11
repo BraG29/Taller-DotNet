@@ -41,12 +41,7 @@ namespace Comercial_Office.Infraestructure
         }
         public void Delete(string id)
         {
-            if(id != null)
-            {
-                this._Offices.Remove(id);
-            }
-
-            throw new KeyNotFoundException();
+            this._Offices.Remove(id);
         }
 
         public Office GetOffice(string identificator)

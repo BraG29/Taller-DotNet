@@ -12,9 +12,7 @@ namespace Comercial_Office.Services
             _officeRepository = officeRepository;
         }
         
-        //TODO corregir muestra mal los puestos de atencion
 
-        
         public void CreateOffice(OfficeDTO officeDTO)
         {
             if (officeDTO.Identificator != null)
@@ -39,7 +37,7 @@ namespace Comercial_Office.Services
                     }
                 }
 
-                //Crear queue
+                //TODO Crear queue
                 Office newOffice = new Office(officeDTO.Identificator, null, attentionPlaces);
 
                 _officeRepository.Add(newOffice);
@@ -56,12 +54,30 @@ namespace Comercial_Office.Services
        
         public void UpdateOffice(OfficeDTO office)
         {
-
+            //TODO implementar
         }
 
         public void DeleteOffice(string id)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException($"Identificador no puede ser vacio.");
+            }
 
+            if (_officeRepository.GetOffice(id) == null)
+            {
+                throw new KeyNotFoundException($"No existe una oficina con ese identificador");
+            }
+
+            try
+            {
+                _officeRepository.Delete(id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            
         }
 
         public OfficeDTO GetOffice(string id)
@@ -88,7 +104,7 @@ namespace Comercial_Office.Services
 
                         foreach (AttentionPlace place in attentionPlaceList)
                         {
-                            attentionPlaceListDTO.Add(new AttentionPlaceDTO(place.Number));
+                            attentionPlaceListDTO.Add(new AttentionPlaceDTO(place.Number, place.IsAvailable));
                         }
                     }
 
@@ -117,24 +133,25 @@ namespace Comercial_Office.Services
             {
                 //Armado de la lista de officinas DTO.
                 IList<OfficeDTO> officesDTO = new List<OfficeDTO>();
-                IList<AttentionPlaceDTO> attentionPlacesDTO = new List<AttentionPlaceDTO>();
 
                 foreach (Office office in offices)
                 {
                     if (office.Identificator != null)
                     {
+                        
+                        IList<AttentionPlaceDTO> attentionPlacesDTO = new List<AttentionPlaceDTO>();
+                        
                         if (office.AttentionPlaceList != null)//si no tengo la lista de puestos vacia.
                         {
                             IList<AttentionPlace> attentionPlaces = office.AttentionPlaceList;
                         
                             foreach (AttentionPlace attentionPlace in attentionPlaces)
                             {
-                                attentionPlacesDTO.Add(new AttentionPlaceDTO(attentionPlace.Number));
+                                attentionPlacesDTO.Add(new AttentionPlaceDTO(attentionPlace.Number, attentionPlace.IsAvailable));
                             }
                             
                         }
                        
-
                         OfficeDTO officeDTO = new OfficeDTO(office.Identificator, attentionPlacesDTO);
                         officesDTO.Add(officeDTO);
                     }
