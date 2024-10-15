@@ -13,6 +13,6 @@ namespace Commercial_Office.Services
 
         public void RegisterUser(string  userId, string officeId);
 
-        public void ReleasePosition(string officeId, string placeNumber);
+        public void ReleasePosition(string officeId, long placeNumber);
     }
 }

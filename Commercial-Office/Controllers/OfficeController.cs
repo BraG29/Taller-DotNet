@@ -175,7 +175,7 @@ namespace Commercial_Office.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest("Fallo al eliminar: " + ex.Message);
+                return BadRequest("Fallo al registrar: " + ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
@@ -191,8 +191,24 @@ namespace Commercial_Office.Controllers
 
         public ActionResult<string> releasePosition(string officeId, long placeNumber)
         {
-
-            return Ok();
+            try
+            {
+                _officeService.ReleasePosition(officeId, placeNumber);
+                return Ok();
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al liberar: " + ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocurrió un error inesperado." + ex.Message);
+            }
+           
         }
 
         

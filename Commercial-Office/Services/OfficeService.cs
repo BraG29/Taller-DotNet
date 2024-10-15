@@ -205,9 +205,10 @@ namespace Commercial_Office.Services
 
         }
 
-        public void ReleasePosition(string officeId, string placeNumber)
+        public void ReleasePosition(string officeId, long placeNumber)
         {
-            if (placeNumber == null || officeId == null)
+            //TODO configurar para evitar nros negativos
+            if (placeNumber >= 0 || officeId == null)
             {
                 throw new ArgumentNullException($"Identificadores invalidos o vacios");
             }
@@ -217,6 +218,7 @@ namespace Commercial_Office.Services
             {
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
             }
+
 
 
 
