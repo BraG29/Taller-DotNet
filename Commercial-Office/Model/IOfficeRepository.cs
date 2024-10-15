@@ -1,4 +1,4 @@
-﻿namespace Comercial_Office.Model
+﻿namespace Commercial_Office.Model
 {
     public interface IOfficeRepository
     {

@@ -1,7 +1,7 @@
-using Comercial_Office.Controllers;
-using Comercial_Office.Infraestructure;
-using Comercial_Office.Model;
-using Comercial_Office.Services;
+using Commercial_Office.Controllers;
+using Commercial_Office.Infraestructure;
+using Commercial_Office.Model;
+using Commercial_Office.Services;
 using System.Reflection;
 using Microsoft.OpenApi.Models;
 

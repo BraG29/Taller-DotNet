@@ -1,12 +1,12 @@
-﻿using Comercial_Office.DTO;
-using Comercial_Office.Model;
-using Comercial_Office.Services;
+﻿using Commercial_Office.DTO;
+using Commercial_Office.Model;
+using Commercial_Office.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Runtime.InteropServices;
 
 
-namespace Comercial_Office.Controllers
+namespace Commercial_Office.Controllers
 {
     [ApiController]
     [Route("office")]

@@ -1,7 +1,7 @@
-﻿using Comercial_Office.Model;
+﻿using Commercial_Office.Model;
 using System.Collections.Concurrent;
 
-namespace Comercial_Office.Infraestructure
+namespace Commercial_Office.Infraestructure
 {
     public class OfficeRepositoryImpl : IOfficeRepository
     {

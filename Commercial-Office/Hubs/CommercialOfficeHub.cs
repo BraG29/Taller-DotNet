@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-namespace Comercial_Office.Hubs
+namespace Commercial_Office.Hubs
 {
     public class CommercialOfficeHub : Hub
     {

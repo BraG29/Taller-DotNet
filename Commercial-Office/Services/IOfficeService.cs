@@ -1,7 +1,7 @@
-﻿using Comercial_Office.Model;
-using Comercial_Office.DTO;
+﻿using Commercial_Office.Model;
+using Commercial_Office.DTO;
 
-namespace Comercial_Office.Services
+namespace Commercial_Office.Services
 {
     public interface IOfficeService
     {

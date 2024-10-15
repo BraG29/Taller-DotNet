@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 
-namespace Comercial_Office.Model
+namespace Commercial_Office.Model
 {
     public class Office
     {
