@@ -205,6 +205,7 @@ namespace Commercial_Office.Services
 
         }
 
+        
         public void ReleasePosition(string officeId, long placeNumber)
         {
             //TODO configurar para evitar nros negativos
@@ -219,9 +220,41 @@ namespace Commercial_Office.Services
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
             }
 
+            foreach (AttentionPlace place in office.AttentionPlaceList) 
+            {
 
+                if (place.Number == placeNumber)
+                {
+                    if (!place.IsAvailable)
+                    {
+                        place.IsAvailable = true;
 
+                        if (office.UserQueue.TryDequeue(out string userId))
+                        {
+                            //llamar la hub y tirar la data de puesto ocupado con usuario de la queue.
+                            Console.WriteLine("Aca estaría llamando al hub para avisar que se ocupo un puesto");
+                            Console.WriteLine(userId);
+                            Console.WriteLine(place.Number);
+                            office.OcupyAttentionPlace(place.Number);
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Cola de usuarios  vacia.");
+                        }
+                    }
+                    else
+                    {
+                        //llamar la hub y avisar liberacion de puesto.
 
+                    }
+                    
+                }
+                else
+                {
+                    throw new Exception($"No existe el puesto.");
+                }
+
+            }
         }
     }
 }

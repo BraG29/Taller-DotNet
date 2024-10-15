@@ -204,6 +204,10 @@ namespace Commercial_Office.Controllers
             {
                 return NotFound(ex.Message);
             }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, "Ocurrió un error inesperado." + ex.Message);

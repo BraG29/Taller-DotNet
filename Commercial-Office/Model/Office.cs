@@ -40,7 +40,6 @@ namespace Commercial_Office.Model
             return 0;
         }
 
-        //Ver como modificar el tema de que sea vacio.
         public void OcupyAttentionPlace(long postId)
         {
             if (this.AttentionPlaceList != null)
