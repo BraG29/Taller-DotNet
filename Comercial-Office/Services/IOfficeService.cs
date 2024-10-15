@@ -11,5 +11,8 @@ namespace Comercial_Office.Services
         public OfficeDTO GetOffice(string id);
         public IList<OfficeDTO> GetAll();
 
+        public void RegisterUser(string  userId, string officeId);
+
+        public void ReleasePosition(string officeId, string placeNumber);
     }
 }

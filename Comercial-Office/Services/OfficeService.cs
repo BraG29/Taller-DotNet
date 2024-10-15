@@ -1,5 +1,6 @@
 ﻿using Comercial_Office.Model;
 using Comercial_Office.DTO;
+using System.Collections.Concurrent;
 
 namespace Comercial_Office.Services 
 {
@@ -7,9 +8,11 @@ namespace Comercial_Office.Services
     {
 
         private readonly IOfficeRepository _officeRepository;
+        private readonly ILogger<OfficeService> _logger;
 
-        public OfficeService(IOfficeRepository officeRepository) {
+        public OfficeService(IOfficeRepository officeRepository, ILogger<OfficeService> logger) {
             _officeRepository = officeRepository;
+            _logger = logger;
         }
         
 
@@ -37,8 +40,10 @@ namespace Comercial_Office.Services
                     }
                 }
 
-                //TODO Crear queue
-                Office newOffice = new Office(officeDTO.Identificator, null, attentionPlaces);
+                
+                ConcurrentQueue<string> queue = new ConcurrentQueue<string>();
+
+                Office newOffice = new Office(officeDTO.Identificator, queue, attentionPlaces);
 
                 _officeRepository.Add(newOffice);
 
@@ -54,7 +59,7 @@ namespace Comercial_Office.Services
        
         public void UpdateOffice(OfficeDTO office)
         {
-            //TODO implementar
+            //TODO implementar, solo modifica puestos
         }
 
         public void DeleteOffice(string id)
@@ -82,6 +87,8 @@ namespace Comercial_Office.Services
 
         public OfficeDTO GetOffice(string id)
         {
+            _logger.LogInformation("Estoy en en obtener una oficina");
+
             if (id != null)
             {
                 Office office = this._officeRepository.GetOffice(id);
@@ -163,5 +170,56 @@ namespace Comercial_Office.Services
             
         }
 
+
+
+        public void RegisterUser(string userId, string officeId)
+        {
+            if (userId == null || officeId == null)
+            {
+                throw new ArgumentNullException($"Identificadores invalidos o vacios");
+            }
+
+            Office office = this._officeRepository.GetOffice(officeId);
+            if (office == null)
+            {
+                throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
+            }
+
+            var post = office.IsAvailable();
+
+            //VER COMO CAMBIAR ESTO
+            if (post == 0)
+            {
+                //no hay puesto disponible coloco al cliente en la queue
+                office.UserQueue.Enqueue(userId);
+                Console.WriteLine("Usuario entra a la queue");
+            }
+            else
+            {
+                //llamar la hub y tirar la data.
+                Console.WriteLine("Aca estaría llamando al hub para avisar que se ocupo un puesto");
+                Console.WriteLine(userId);
+                Console.WriteLine(post);
+                office.OcupyAttentionPlace(post);
+            }
+
+        }
+
+        public void ReleasePosition(string officeId, string placeNumber)
+        {
+            if (placeNumber == null || officeId == null)
+            {
+                throw new ArgumentNullException($"Identificadores invalidos o vacios");
+            }
+
+            Office office = this._officeRepository.GetOffice(officeId);
+            if (office == null)
+            {
+                throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
+            }
+
+
+
+        }
     }
 }

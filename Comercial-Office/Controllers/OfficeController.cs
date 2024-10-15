@@ -164,6 +164,37 @@ namespace Comercial_Office.Controllers
 
         }
 
+
+        public ActionResult<string> registerUser(string userId, string officeId)
+        {
+
+            try
+            {
+                _officeService.RegisterUser(userId, officeId);
+                return Ok();
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al eliminar: " + ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocurrió un error inesperado." + ex.Message);
+            }
+
+        }
+
+
+        public ActionResult<string> releasePosition(string officeId, long placeNumber)
+        {
+
+            return Ok();
+        }
+
         
     }
 

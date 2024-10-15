@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+
 namespace Comercial_Office.Services
 
 {
