@@ -1,4 +1,4 @@
-﻿namespace Comercial_Office.DTO
+﻿namespace Commercial_Office.DTO
 {
     public class OfficeDTO
     {

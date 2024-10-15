@@ -1,6 +1,7 @@
-﻿using Comercial_Office.Model;
+﻿using Commercial_Office.Model;
+using System.Collections.Concurrent;
 
-namespace Comercial_Office.Infraestructure
+namespace Commercial_Office.Infraestructure
 {
     public class OfficeRepositoryImpl : IOfficeRepository
     {
@@ -11,9 +12,25 @@ namespace Comercial_Office.Infraestructure
                 
             _Offices = new Dictionary<string, Office>();
 
-            Office office1 = new Office("OFI-1", null, null);
-            Office office2 = new Office("OFI-2", null, null);
+            //Objeto de prueba oficina1
+            ConcurrentQueue<string> _OfficeQueue1 = new ConcurrentQueue<string>();
+            IList<AttentionPlace> attentionPlaces = new List<AttentionPlace>();
+            AttentionPlace _AttentionPlace1 = new AttentionPlace(1, true);
+            AttentionPlace _AttentionPlace2 = new AttentionPlace(2, true);
+            attentionPlaces.Add(_AttentionPlace1);
+            attentionPlaces.Add(_AttentionPlace2);
+            Office office1 = new Office("OFI-1", _OfficeQueue1, attentionPlaces);
 
+            //Objeto de prueba oficina2
+            ConcurrentQueue<string> _OfficeQueue2 = new ConcurrentQueue<string>();
+            IList<AttentionPlace> attentionPlaces2 = new List<AttentionPlace>();
+            AttentionPlace _AttentionPlace3 = new AttentionPlace(3, true);
+            AttentionPlace _AttentionPlace4 = new AttentionPlace(4, true);
+            attentionPlaces2.Add(_AttentionPlace3);
+            attentionPlaces2.Add(_AttentionPlace4);
+            Office office2 = new Office("OFI-2", _OfficeQueue2, attentionPlaces2);
+
+            //agrego ambos objetos al diccionario.
             this._Offices.Add(office1.Identificator,office1);
             this._Offices.Add(office2.Identificator,office2);
 
@@ -41,12 +58,7 @@ namespace Comercial_Office.Infraestructure
         }
         public void Delete(string id)
         {
-            if(id != null)
-            {
-                this._Offices.Remove(id);
-            }
-
-            throw new KeyNotFoundException();
+            this._Offices.Remove(id);
         }
 
         public Office GetOffice(string identificator)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
-namespace Comercial_Office.Services
+
+namespace Commercial_Office.Services
 
 {
     public class SignalRService
