@@ -1,0 +1,61 @@
+﻿@page "/clientMonitor"
+
+@using Monitor_Client.Models;
+@using Microsoft.AspNetCore.SignalR.Client;
+
+
+
+<h3>Monitor de oficina</h3>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+             N° de puesto
+            </th>
+            <th>
+                Cedula
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+<!-- TODO: add a for each client in the data we receive from the hub-->
+            <tr>
+                <td>
+                    TODO add AttentionPlace, welp place
+                </td>
+                <td>
+                    TODO add client's CI
+                </td>
+               
+            </tr>
+        
+    </tbody>
+</table>
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Console.WriteLine("Soy ClientMonitor y me inicializé");
+        Console.WriteLine(base.OnInitializedAsync());
+
+        //connect to the Hub and get the client's information
+
+        HubConnection connection;
+
+        ////nos conectamos al hub pasandole la dirección en donde está hosteado el mismo
+        connection = new HubConnectionBuilder().WithUrl("https://localhost:7777/loginhub").Build();
+
+        connection.On<string>("NombreDeLaFuncionDondeMeVanAPasarLosDatosDeLosUsuarios", (string userId) =>
+        {
+
+        });
+
+        await connection.StartAsync();
+    }
+
+}
