@@ -1,9 +1,7 @@
 ﻿using Commercial_Office.DTO;
-using Commercial_Office.Model;
 using Commercial_Office.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
-using System.Runtime.InteropServices;
 
 
 namespace Commercial_Office.Controllers
@@ -199,6 +197,10 @@ namespace Commercial_Office.Controllers
                 return Ok();
             }
             catch (ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al liberar: " + ex.Message);
+            }
+            catch (ArgumentException ex)
             {
                 return BadRequest("Fallo al liberar: " + ex.Message);
             }

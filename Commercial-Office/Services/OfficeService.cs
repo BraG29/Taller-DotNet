@@ -18,6 +18,7 @@ namespace Commercial_Office.Services
             _officeRepository = officeRepository;
             _logger = logger;
             _hub = hub;
+
         }
         
         public void CreateOffice(OfficeDTO officeDTO)
@@ -39,7 +40,8 @@ namespace Commercial_Office.Services
 
                     foreach (AttentionPlaceDTO place in attentionPlacesDTO)
                     {
-                        AttentionPlace attentionPlace = new AttentionPlace(place.Number, false);
+                        ulong placeNumber = (ulong)place.Number;
+                        AttentionPlace attentionPlace = new AttentionPlace(placeNumber, false);
                         attentionPlaces.Add(attentionPlace);
                     }
                 }
@@ -115,7 +117,8 @@ namespace Commercial_Office.Services
 
                         foreach (AttentionPlace place in attentionPlaceList)
                         {
-                            attentionPlaceListDTO.Add(new AttentionPlaceDTO(place.Number, place.IsAvailable));
+                            long placeNumber = (long)place.Number;
+                            attentionPlaceListDTO.Add(new AttentionPlaceDTO(placeNumber, place.IsAvailable));
                         }
                     }
 
@@ -158,7 +161,8 @@ namespace Commercial_Office.Services
                         
                             foreach (AttentionPlace attentionPlace in attentionPlaces)
                             {
-                                attentionPlacesDTO.Add(new AttentionPlaceDTO(attentionPlace.Number, attentionPlace.IsAvailable));
+                                long attentionPlaceNumber = (long)attentionPlace.Number;
+                                attentionPlacesDTO.Add(new AttentionPlaceDTO(attentionPlaceNumber, attentionPlace.IsAvailable));
                             }
                             
                         }
@@ -176,7 +180,7 @@ namespace Commercial_Office.Services
 
 
 
-        public void RegisterUser(string userId, string officeId)
+        public async void RegisterUser(string userId, string officeId)
         {
             if (userId == null || officeId == null)
             {
@@ -189,10 +193,10 @@ namespace Commercial_Office.Services
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
             }
 
+            //Esto me retorna un numero: busca el primer puesto libre de la lista de puestos de la oficina
             var post = office.IsAvailable();
 
-            //VER COMO CAMBIAR ESTO
-            if (post == 0)
+            if (post == -1)
             {
                 //no hay puesto disponible coloco al cliente en la queue
                 office.UserQueue.Enqueue(userId);
@@ -204,20 +208,17 @@ namespace Commercial_Office.Services
                  * TODO: Cambiar el llamado de "All" a "AllExcept" para no enviar los datos al servicio de QM cuando este implementado
                  */
                 _hub.Clients.All.SendAsync("RefreshMonitor", userId, post, officeId);
-                // Console.WriteLine("Aca estaría llamando al hub para avisar que se ocupo un puesto");
-                // Console.WriteLine(userId);
-                // Console.WriteLine(post);
-                office.OcupyAttentionPlace(post);
+                office.OcupyAttentionPlace((ulong)post);
             }
 
         }
 
         public void ReleasePosition(string officeId, long placeNumber)
         {
-            //TODO configurar para evitar nros negativos
-            if (placeNumber <= 0 || officeId == null)
+
+            if (placeNumber < 0 || officeId == null)
             {
-                throw new ArgumentNullException($"Identificadores invalidos o vacios");
+                throw new ArgumentNullException($"Identificadores invalidos (no pueden ser menores a 0) o vacios");
             }
 
             Office office = this._officeRepository.GetOffice(officeId);
@@ -228,31 +229,32 @@ namespace Commercial_Office.Services
 
             try
             {
+                ulong placeNumberCast = (ulong)placeNumber;
+
+                //obtener el puesto que coincida con el numero
                 AttentionPlace place = office.AttentionPlaceList
-                    .First(place => place.Number == placeNumber);
+                    .First(place => place.Number == placeNumberCast);
 
-                if (!place.IsAvailable)
+                if (!place.IsAvailable)//si el puesto esta ocupado
                 {
-                    place.IsAvailable = true;
+                    place.IsAvailable = true; //libero el puesto
 
-                    if (office.UserQueue.TryDequeue(out string userId))
+                    //Si hay usuarios disponibles en la cola saco uno y ocupo el puesto con ese usuario.
+                    if (office.UserQueue.TryDequeue(out string? userId))
                     {
-                        //llamar la hub y tirar la data de puesto ocupado con usuario de la queue.
-                        Console.WriteLine("Aca estaría llamando al hub para avisar que se ocupo un puesto");
-                        Console.WriteLine(userId);
-                        Console.WriteLine(place.Number);
+                        //TODO llamar la hub y tirar la data de puesto ocupado con usuario de la queue.
                         office.OcupyAttentionPlace(place.Number);
                     }
                 }
-                else
+                else //Si el puesto ya se encuentra libre
                 {
                     throw new ArgumentException("El puesto ya se encuentra liberado");
                 }
-
+                
             }
-            catch (InvalidOperationException e)
+            catch (KeyNotFoundException) //si no encuentro el puesto
             {
-                throw new Exception($"No existe el puesto.");
+                throw new KeyNotFoundException($"No existe el puesto.");
             }
         }
     }

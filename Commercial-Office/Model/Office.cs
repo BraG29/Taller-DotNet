@@ -8,6 +8,7 @@ namespace Commercial_Office.Model
 
         public string Identificator { get; set; }
         public ConcurrentQueue<string> UserQueue { get; set; }
+        //public ConcurrentQueue<TimedQueueItem<string>> UserQueue { get; set; } = new ConcurrentQueue<TimedQueueItem<string>>();
 
         public IList<AttentionPlace> AttentionPlaceList { get; set; }
         
@@ -23,7 +24,6 @@ namespace Commercial_Office.Model
             this.AttentionPlaceList = attentionPlaceList;
         }
 
-        //TODO arreglar return
         public long IsAvailable()
         {
             if (this.AttentionPlaceList != null)
@@ -32,15 +32,15 @@ namespace Commercial_Office.Model
                 {
                     if (attentionPlace.IsAvailable) 
                     {
-                        return attentionPlace.Number;
+                        return (long)attentionPlace.Number;
                     }
                 }
-                return 0;
+                return -1;
             }
-            return 0;
+            return -1;
         }
 
-        public void OcupyAttentionPlace(long postId)
+        public void OcupyAttentionPlace(ulong postId)
         {
             if (this.AttentionPlaceList != null)
             {
