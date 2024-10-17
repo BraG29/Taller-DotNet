@@ -1,6 +1,8 @@
 ﻿using Commercial_Office.Model;
 using Commercial_Office.DTO;
 using System.Collections.Concurrent;
+using Commercial_Office.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Commercial_Office.Services 
 {
@@ -9,13 +11,15 @@ namespace Commercial_Office.Services
 
         private readonly IOfficeRepository _officeRepository;
         private readonly ILogger<OfficeService> _logger;
-
-        public OfficeService(IOfficeRepository officeRepository, ILogger<OfficeService> logger) {
+        private readonly IHubContext<CommercialOfficeHub> _hub;
+        
+        public OfficeService(IOfficeRepository officeRepository, ILogger<OfficeService> logger,
+            IHubContext<CommercialOfficeHub> hub) {
             _officeRepository = officeRepository;
             _logger = logger;
+            _hub = hub;
         }
         
-
         public void CreateOffice(OfficeDTO officeDTO)
         {
             if (officeDTO.Identificator != null)
@@ -196,20 +200,22 @@ namespace Commercial_Office.Services
             }
             else
             {
-                //llamar la hub y tirar la data.
-                Console.WriteLine("Aca estaría llamando al hub para avisar que se ocupo un puesto");
-                Console.WriteLine(userId);
-                Console.WriteLine(post);
+                /*
+                 * TODO: Cambiar el llamado de "All" a "AllExcept" para no enviar los datos al servicio de QM cuando este implementado
+                 */
+                _hub.Clients.All.SendAsync("RefreshMonitor", userId, post, officeId);
+                // Console.WriteLine("Aca estaría llamando al hub para avisar que se ocupo un puesto");
+                // Console.WriteLine(userId);
+                // Console.WriteLine(post);
                 office.OcupyAttentionPlace(post);
             }
 
         }
 
-        
         public void ReleasePosition(string officeId, long placeNumber)
         {
             //TODO configurar para evitar nros negativos
-            if (placeNumber >= 0 || officeId == null)
+            if (placeNumber <= 0 || officeId == null)
             {
                 throw new ArgumentNullException($"Identificadores invalidos o vacios");
             }
@@ -220,40 +226,33 @@ namespace Commercial_Office.Services
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
             }
 
-            foreach (AttentionPlace place in office.AttentionPlaceList) 
+            try
             {
+                AttentionPlace place = office.AttentionPlaceList
+                    .First(place => place.Number == placeNumber);
 
-                if (place.Number == placeNumber)
+                if (!place.IsAvailable)
                 {
-                    if (!place.IsAvailable)
-                    {
-                        place.IsAvailable = true;
+                    place.IsAvailable = true;
 
-                        if (office.UserQueue.TryDequeue(out string userId))
-                        {
-                            //llamar la hub y tirar la data de puesto ocupado con usuario de la queue.
-                            Console.WriteLine("Aca estaría llamando al hub para avisar que se ocupo un puesto");
-                            Console.WriteLine(userId);
-                            Console.WriteLine(place.Number);
-                            office.OcupyAttentionPlace(place.Number);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException($"Cola de usuarios  vacia.");
-                        }
-                    }
-                    else
+                    if (office.UserQueue.TryDequeue(out string userId))
                     {
-                        //llamar la hub y avisar liberacion de puesto.
-
+                        //llamar la hub y tirar la data de puesto ocupado con usuario de la queue.
+                        Console.WriteLine("Aca estaría llamando al hub para avisar que se ocupo un puesto");
+                        Console.WriteLine(userId);
+                        Console.WriteLine(place.Number);
+                        office.OcupyAttentionPlace(place.Number);
                     }
-                    
                 }
                 else
                 {
-                    throw new Exception($"No existe el puesto.");
+                    throw new ArgumentException("El puesto ya se encuentra liberado");
                 }
 
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new Exception($"No existe el puesto.");
             }
         }
     }
