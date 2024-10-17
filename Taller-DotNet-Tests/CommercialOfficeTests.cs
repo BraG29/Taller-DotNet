@@ -1,10 +1,11 @@
-using Comercial_Office.Model;
-using Comercial_Office.Hubs;
-using Comercial_Office.Services;
+using Commercial_Office.Model;
+using Commercial_Office.Hubs;
+using Commercial_Office.Services;
 using Moq;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Collections.Concurrent;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Taller_DotNet_Tests.Tests
 {
@@ -12,7 +13,7 @@ namespace Taller_DotNet_Tests.Tests
     {
         
         private readonly OfficeService _officeService;
-        private readonly Mock<CommercialOfficeHub> _commercialOfficeHubMock;
+        private readonly Mock<IHubContext<CommercialOfficeHub>> _commercialOfficeHubMock;
         private readonly Mock<IOfficeRepository> _repositoryMock;
         private readonly Mock<ILogger<OfficeService>> _loggerMock;
         public CommercialOfficeTests()
@@ -21,9 +22,9 @@ namespace Taller_DotNet_Tests.Tests
             _repositoryMock = new Mock<IOfficeRepository>();
             _loggerMock = new Mock<ILogger<OfficeService>>();
 
-            _officeService = new OfficeService(_repositoryMock.Object, _loggerMock.Object);
+            _commercialOfficeHubMock = new Mock<IHubContext<CommercialOfficeHub>>();
+            _officeService = new OfficeService(_repositoryMock.Object, _loggerMock.Object, _commercialOfficeHubMock.Object);
 
-            _commercialOfficeHubMock = new Mock<CommercialOfficeHub>();
 
         }
 
