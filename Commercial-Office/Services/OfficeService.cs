@@ -295,7 +295,7 @@ namespace Commercial_Office.Services
                     //Si hay usuarios disponibles en la cola saco uno y ocupo el puesto con ese usuario.
                     if (office.UserQueue.TryDequeue(out TimedQueueItem<string>? userId))
                     {
-                        //TODO llamar la hub y tirar la data de puesto ocupado con usuario de la queue.
+                        _hub.Clients.All.SendAsync("RefreshMonitor", userId, place.Number, officeId);
                         office.OcupyAttentionPlace(place.Number);
                     }
                 }
