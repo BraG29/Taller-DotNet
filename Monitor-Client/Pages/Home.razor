@@ -32,4 +32,14 @@
 
         await _connection.StartAsync();
     }
+
+    /*
+    _connection.On("RefreshMonitor", (string userId, long post, string officeId) =>
+        {
+        Console.WriteLine($"Datos recibidos mediante SignalR: {userId}, {post}, {officeId}");
+        model.clientCi = userId;
+        model.attentionPlace = post;
+        model.officeId = officeId;
+        });
+    */
 }
