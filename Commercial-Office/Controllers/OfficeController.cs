@@ -164,7 +164,8 @@ namespace Commercial_Office.Controllers
 
         }
 
-
+        [HttpPut]
+        [Route("registerUser")]
         public ActionResult<string> registerUser(string userId, string officeId)
         {
 
@@ -188,7 +189,8 @@ namespace Commercial_Office.Controllers
 
         }
 
-
+        [HttpPut]
+        [Route("releasePosition")]
         public ActionResult<string> releasePosition(string officeId, long placeNumber)
         {
             try
