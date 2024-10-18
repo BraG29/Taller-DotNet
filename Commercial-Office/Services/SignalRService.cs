@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
-namespace Comercial_Office.Controllers
+
+namespace Commercial_Office.Services
 
 {
     public class SignalRService
@@ -8,13 +9,18 @@ namespace Comercial_Office.Controllers
 
         public async Task connect()
         {
-            //construir conexion
-            _connection = new HubConnectionBuilder().WithUrl("urlTest.com").Build();
 
+            _connection = new HubConnectionBuilder().WithUrl("urlTest.com").Build();
             await _connection.StartAsync();
             Console.WriteLine("Conexion establecida con el hub");
 
-            //alguna funcion de enviar un mensaje
         }
+
+        public void message()
+        {
+            Console.WriteLine("Enviar data a un  hub W.I.P");
+        }
+
+
     }
 }

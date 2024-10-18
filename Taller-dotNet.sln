@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API-Gateway", "API-Gateway\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Monitor-Client", "Monitor-Client\Monitor-Client.csproj", "{CC460E53-BDAF-4DFB-988B-BEC90DA21D4B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comercial-Office", "Comercial-Office\Comercial-Office.csproj", "{C1406CA5-9BA4-4348-BA33-FA7C5CFA55E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Commercial-Office", "Commercial-Office\Commercial-Office.csproj", "{6496505A-AF45-42E1-9760-C0E93F648484}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{CC460E53-BDAF-4DFB-988B-BEC90DA21D4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC460E53-BDAF-4DFB-988B-BEC90DA21D4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC460E53-BDAF-4DFB-988B-BEC90DA21D4B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C1406CA5-9BA4-4348-BA33-FA7C5CFA55E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C1406CA5-9BA4-4348-BA33-FA7C5CFA55E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C1406CA5-9BA4-4348-BA33-FA7C5CFA55E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C1406CA5-9BA4-4348-BA33-FA7C5CFA55E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6496505A-AF45-42E1-9760-C0E93F648484}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6496505A-AF45-42E1-9760-C0E93F648484}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6496505A-AF45-42E1-9760-C0E93F648484}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6496505A-AF45-42E1-9760-C0E93F648484}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
