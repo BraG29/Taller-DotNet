@@ -237,10 +237,7 @@ namespace Commercial_Office.Services
 
                     if (office.UserQueue.TryDequeue(out string userId))
                     {
-                        //llamar la hub y tirar la data de puesto ocupado con usuario de la queue.
-                        Console.WriteLine("Aca estaría llamando al hub para avisar que se ocupo un puesto");
-                        Console.WriteLine(userId);
-                        Console.WriteLine(place.Number);
+                        _hub.Clients.All.SendAsync("RefreshMonitor", userId, place.Number, officeId);
                         office.OcupyAttentionPlace(place.Number);
                     }
                 }
