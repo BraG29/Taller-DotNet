@@ -12,24 +12,33 @@
     <thead>
         <tr>
             <th>
-             N° de puesto
+                N° de puesto
             </th>
             <th>
                 Cedula
             </th>
+            <th>
+                N° Oficina
+            </th>
         </tr>
     </thead>
     <tbody>
-<!-- TODO: add a for each client in the data we receive from the hub-->
-            <tr>
-                <td>
-                    TODO add AttentionPlace, welp place
-                </td>
-                <td>
-                    TODO add client's CI
-                </td>
-               
-            </tr>
+
+    @foreach (var i in models){
+        <tr>
+            <td>
+                @i.Value.attentionPlace
+            </td>
+            <td>
+                @i.Value.clientCi
+            </td>
+            <td>
+                @i.Value.officeId
+            </td>
+
+        </tr>
+    }
+            
         
     </tbody>
 </table>
@@ -37,25 +46,46 @@
 
 @code {
 
-    protected override async Task OnInitializedAsync()
+    HubConnection _connection;
+
+    class Model
     {
-        await base.OnInitializedAsync();
-        Console.WriteLine("Soy ClientMonitor y me inicializé");
-        Console.WriteLine(base.OnInitializedAsync());
-
-        //connect to the Hub and get the client's information
-
-        HubConnection connection;
-
-        ////nos conectamos al hub pasandole la dirección en donde está hosteado el mismo
-        connection = new HubConnectionBuilder().WithUrl("https://localhost:7777/loginhub").Build();
-
-        connection.On<string>("NombreDeLaFuncionDondeMeVanAPasarLosDatosDeLosUsuarios", (string userId) =>
-        {
-
-        });
-
-        await connection.StartAsync();
+        public string clientCi { get; set; }
+        public long attentionPlace { get; set; }
+        public string officeId { get; set; }
     }
 
+    IDictionary<long,Model> models = new Dictionary<long,Model>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _connection = new HubConnectionBuilder().WithUrl("http://localhost:5030/commercial-office/hub").Build();
+
+        _connection.On("RefreshMonitor", (string userId, long post, string officeId) =>
+        {
+            Console.WriteLine($"Datos recibidos mediante SignalR: {userId}, {post}, {officeId}");
+
+            Model model = new Model();
+
+            model.clientCi = userId;
+            model.attentionPlace = post;
+            model.officeId = officeId;
+
+            if (models.ContainsKey(post)){//si se encuentra el puesto ya ocupado
+
+                models.Remove(model.attentionPlace);//lo liberamos
+            }
+
+            if (!model.clientCi.Equals("remove"))//si el llamado no es solo para remover, también añadimos al usuario al puesto
+            {
+                models.Add(model.attentionPlace, model);
+            }
+
+
+            //Le avisamos al componente que se re-renderize dado que su estádo ha cambiado
+            InvokeAsync(StateHasChanged);
+        });
+
+        await _connection.StartAsync();
+    }
 }

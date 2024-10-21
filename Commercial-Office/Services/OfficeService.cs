@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using Commercial_Office.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using static Commercial_Office.Model.Office;
+using Microsoft.Extensions.Logging;
 
 namespace Commercial_Office.Services 
 {
@@ -290,13 +291,24 @@ namespace Commercial_Office.Services
 
                 if (!place.IsAvailable)//si el puesto esta ocupado
                 {
-                    place.IsAvailable = true; //libero el puesto
 
+                    place.IsAvailable = true; //libero el puesto
                     //Si hay usuarios disponibles en la cola saco uno y ocupo el puesto con ese usuario.
                     if (office.UserQueue.TryDequeue(out TimedQueueItem<string>? userId))
                     {
-                        _hub.Clients.All.SendAsync("RefreshMonitor", userId, place.Number, officeId);
+                       // _logger.LogInformation(" Antes de Llegar al refresh monitor con datos: " + "|" + userId.Item + "|" + place.Number + "|" + officeId);
+                        
+                        _hub.Clients.All.SendAsync("RefreshMonitor", userId.Item, place.Number, officeId);
                         office.OcupyAttentionPlace(place.Number);
+
+                        //_logger.LogInformation(" DESPUES de Llegar al refresh monitor con datos: " + "|" + userId.Item + "|" + place.Number + "|" + officeId);
+
+                    }
+                    else//avisamos al monitor que remueva el puesto recién liberado
+                    {
+                        //TODO:
+                        //preguntar a los pibes si en este else se debe hacer algún control más.
+                        _hub.Clients.All.SendAsync("RefreshMonitor", "remove", place.Number, officeId);
                     }
                 }
                 else //Si el puesto ya se encuentra libre
