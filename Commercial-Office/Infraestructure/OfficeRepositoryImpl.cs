@@ -1,5 +1,6 @@
 ﻿using Commercial_Office.Model;
 using System.Collections.Concurrent;
+using static Commercial_Office.Model.Office;
 
 namespace Commercial_Office.Infraestructure
 {
@@ -13,7 +14,8 @@ namespace Commercial_Office.Infraestructure
             _Offices = new Dictionary<string, Office>();
 
             //Objeto de prueba oficina1
-            ConcurrentQueue<string> _OfficeQueue1 = new ConcurrentQueue<string>();
+            ConcurrentQueue<TimedQueueItem<string>> _OfficeQueue1 = new ConcurrentQueue<TimedQueueItem<string>>();
+
             IList<AttentionPlace> attentionPlaces = new List<AttentionPlace>();
             AttentionPlace _AttentionPlace1 = new AttentionPlace(1, true);
             AttentionPlace _AttentionPlace2 = new AttentionPlace(2, true);
@@ -22,7 +24,8 @@ namespace Commercial_Office.Infraestructure
             Office office1 = new Office("OFI-1", _OfficeQueue1, attentionPlaces);
 
             //Objeto de prueba oficina2
-            ConcurrentQueue<string> _OfficeQueue2 = new ConcurrentQueue<string>();
+            ConcurrentQueue<TimedQueueItem<string>> _OfficeQueue2 = new ConcurrentQueue<TimedQueueItem<string>>();
+
             IList<AttentionPlace> attentionPlaces2 = new List<AttentionPlace>();
             AttentionPlace _AttentionPlace3 = new AttentionPlace(3, true);
             AttentionPlace _AttentionPlace4 = new AttentionPlace(4, true);
@@ -69,6 +72,7 @@ namespace Commercial_Office.Infraestructure
             {
                 return office;
             }
+            
             return null;
            
         }

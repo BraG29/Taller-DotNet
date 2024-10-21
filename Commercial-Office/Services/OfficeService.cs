@@ -3,6 +3,7 @@ using Commercial_Office.DTO;
 using System.Collections.Concurrent;
 using Commercial_Office.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using static Commercial_Office.Model.Office;
 
 namespace Commercial_Office.Services 
 {
@@ -18,6 +19,7 @@ namespace Commercial_Office.Services
             _officeRepository = officeRepository;
             _logger = logger;
             _hub = hub;
+
         }
         
         public void CreateOffice(OfficeDTO officeDTO)
@@ -29,7 +31,6 @@ namespace Commercial_Office.Services
                     throw new ArgumentException($"Oficina ya existe");
                 }
 
-                
                 //Obtengo puestos de atencion del DTO y los paso a objetos de dominio.
                 IList<AttentionPlace> attentionPlaces = new List<AttentionPlace>();
 
@@ -39,13 +40,19 @@ namespace Commercial_Office.Services
 
                     foreach (AttentionPlaceDTO place in attentionPlacesDTO)
                     {
-                        AttentionPlace attentionPlace = new AttentionPlace(place.Number, false);
+
+                        if (place.Number < 0)
+                        {
+                            throw new ArgumentException($"Numero de puesto no puede ser menor a 0");
+                        }
+
+                        ulong placeNumber = (ulong)place.Number;
+                        AttentionPlace attentionPlace = new AttentionPlace(placeNumber, false);
                         attentionPlaces.Add(attentionPlace);
                     }
                 }
 
-                
-                ConcurrentQueue<string> queue = new ConcurrentQueue<string>();
+                ConcurrentQueue<TimedQueueItem<string>> queue = new ConcurrentQueue<TimedQueueItem<string>>();
 
                 Office newOffice = new Office(officeDTO.Identificator, queue, attentionPlaces);
 
@@ -61,9 +68,50 @@ namespace Commercial_Office.Services
         }
 
        
-        public void UpdateOffice(OfficeDTO office)
+        public void UpdateOffice(string officeId, IList<AttentionPlaceDTO> placesDTO)
         {
-            //TODO implementar, solo modifica puestos
+            if (officeId == null || placesDTO == null)
+            {
+                throw new ArgumentNullException($"Parametro/s vacio/s.");
+            }
+
+            Office office = _officeRepository.GetOffice(officeId);
+
+            if(office == null)
+            {
+                throw new KeyNotFoundException($"No existe la oficina");
+            }
+
+            foreach (AttentionPlaceDTO placeDTO in placesDTO)
+            {
+                if (placeDTO.Number < 0)
+                {
+                    throw new ArgumentException($"No se permiten numeros menores a 0");
+                }
+
+                try
+                {
+                    //actualizo lugares existentes
+                    AttentionPlace place = office.AttentionPlaceList
+                        .First(p => p.Number == (ulong)placeDTO.Number);
+
+                    if (place != null)
+                    {
+                        place.IsAvailable = placeDTO.Available;
+                    }
+                    else
+                    {
+                        //si no existe agrego a la lista
+                        office.AttentionPlaceList.Add(new AttentionPlace((ulong)placeDTO.Number, placeDTO.Available));
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    throw new InvalidOperationException($"No existe el puesto");
+                }
+           
+            }
+
         }
 
         public void DeleteOffice(string id)
@@ -115,7 +163,8 @@ namespace Commercial_Office.Services
 
                         foreach (AttentionPlace place in attentionPlaceList)
                         {
-                            attentionPlaceListDTO.Add(new AttentionPlaceDTO(place.Number, place.IsAvailable));
+                            long placeNumber = (long)place.Number;
+                            attentionPlaceListDTO.Add(new AttentionPlaceDTO(placeNumber, place.IsAvailable));
                         }
                     }
 
@@ -158,7 +207,8 @@ namespace Commercial_Office.Services
                         
                             foreach (AttentionPlace attentionPlace in attentionPlaces)
                             {
-                                attentionPlacesDTO.Add(new AttentionPlaceDTO(attentionPlace.Number, attentionPlace.IsAvailable));
+                                long attentionPlaceNumber = (long)attentionPlace.Number;
+                                attentionPlacesDTO.Add(new AttentionPlaceDTO(attentionPlaceNumber, attentionPlace.IsAvailable));
                             }
                             
                         }
@@ -176,7 +226,7 @@ namespace Commercial_Office.Services
 
 
 
-        public void RegisterUser(string userId, string officeId)
+        public async void RegisterUser(string userId, string officeId)
         {
             if (userId == null || officeId == null)
             {
@@ -189,13 +239,15 @@ namespace Commercial_Office.Services
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
             }
 
+            //Esto me retorna un numero: busca el primer puesto libre de la lista de puestos de la oficina
             var post = office.IsAvailable();
 
-            //VER COMO CAMBIAR ESTO
-            if (post == 0)
+            if (post == -1)
             {
                 //no hay puesto disponible coloco al cliente en la queue
-                office.UserQueue.Enqueue(userId);
+
+                TimedQueueItem<string> user = new TimedQueueItem<string>(userId);
+                office.UserQueue.Enqueue(user);
                 Console.WriteLine("Usuario entra a la queue");
             }
             else
@@ -203,21 +255,23 @@ namespace Commercial_Office.Services
                 /*
                  * TODO: Cambiar el llamado de "All" a "AllExcept" para no enviar los datos al servicio de QM cuando este implementado
                  */
-                _hub.Clients.All.SendAsync("RefreshMonitor", userId, post, officeId);
-                // Console.WriteLine("Aca estaría llamando al hub para avisar que se ocupo un puesto");
-                // Console.WriteLine(userId);
-                // Console.WriteLine(post);
-                office.OcupyAttentionPlace(post);
+                await _hub.Clients.All.SendAsync("RefreshMonitor", userId, post, officeId);
+                office.OcupyAttentionPlace((ulong)post);
             }
 
         }
 
         public void ReleasePosition(string officeId, long placeNumber)
         {
-            //TODO configurar para evitar nros negativos
-            if (placeNumber <= 0 || officeId == null)
+
+            if (officeId == null)
             {
-                throw new ArgumentNullException($"Identificadores invalidos o vacios");
+                throw new ArgumentNullException($"Identificadores invalidos (no pueden ser menores a 0) o vacios");
+            }
+
+            if(placeNumber < 0  )
+            {
+                throw new ArgumentException($"No se aceptan números menores a 0");
             }
 
             Office office = this._officeRepository.GetOffice(officeId);
@@ -226,31 +280,42 @@ namespace Commercial_Office.Services
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
             }
 
+            ulong placeNumberCast = (ulong)placeNumber;
+
             try
             {
+                //obtener el puesto que coincida con el numero
                 AttentionPlace place = office.AttentionPlaceList
-                    .First(place => place.Number == placeNumber);
+                    .First(place => place.Number == placeNumberCast);
 
-                if (!place.IsAvailable)
+                if (!place.IsAvailable)//si el puesto esta ocupado
                 {
-                    place.IsAvailable = true;
+                    place.IsAvailable = true; //libero el puesto
 
-                    if (office.UserQueue.TryDequeue(out string userId))
+                    //Si hay usuarios disponibles en la cola saco uno y ocupo el puesto con ese usuario.
+                    if (office.UserQueue.TryDequeue(out TimedQueueItem<string>? userId))
                     {
                         _hub.Clients.All.SendAsync("RefreshMonitor", userId, place.Number, officeId);
                         office.OcupyAttentionPlace(place.Number);
                     }
                 }
-                else
+                else //Si el puesto ya se encuentra libre
                 {
-                    throw new ArgumentException("El puesto ya se encuentra liberado");
+                    throw new ArgumentException($"El puesto ya se encuentra liberado");
                 }
-
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
-                throw new Exception($"No existe el puesto.");
+                throw new InvalidOperationException($"No existe el puesto");
             }
+
         }
+
+
+        //FUNCIONES DE METRICAS
+        //Obtener cant usuarios en espera
+        //Promedio de espera
+        //fecha de consultas
+
     }
 }
