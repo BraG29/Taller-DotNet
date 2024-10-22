@@ -1,0 +1,91 @@
+﻿@page "/clientMonitor"
+
+@using Monitor_Client.Models;
+@using Microsoft.AspNetCore.SignalR.Client;
+
+
+
+<h3>Monitor de oficina</h3>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                N° de puesto
+            </th>
+            <th>
+                Cedula
+            </th>
+            <th>
+                N° Oficina
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+
+    @foreach (var i in models){
+        <tr>
+            <td>
+                @i.Value.attentionPlace
+            </td>
+            <td>
+                @i.Value.clientCi
+            </td>
+            <td>
+                @i.Value.officeId
+            </td>
+
+        </tr>
+    }
+            
+        
+    </tbody>
+</table>
+
+
+@code {
+
+    HubConnection _connection;
+
+    class Model
+    {
+        public string clientCi { get; set; }
+        public long attentionPlace { get; set; }
+        public string officeId { get; set; }
+    }
+
+    IDictionary<long,Model> models = new Dictionary<long,Model>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _connection = new HubConnectionBuilder().WithUrl("http://localhost:5030/commercial-office/hub").Build();
+
+        _connection.On("RefreshMonitor", (string userId, long post, string officeId) =>
+        {
+            Console.WriteLine($"Datos recibidos mediante SignalR: {userId}, {post}, {officeId}");
+
+            Model model = new Model();
+
+            model.clientCi = userId;
+            model.attentionPlace = post;
+            model.officeId = officeId;
+
+            if (models.ContainsKey(post)){//si se encuentra el puesto ya ocupado
+
+                models.Remove(model.attentionPlace);//lo liberamos
+            }
+
+            if (!model.clientCi.Equals("remove"))//si el llamado no es solo para remover, también añadimos al usuario al puesto
+            {
+                models.Add(model.attentionPlace, model);
+            }
+
+
+            //Le avisamos al componente que se re-renderize dado que su estádo ha cambiado
+            InvokeAsync(StateHasChanged);
+        });
+
+        await _connection.StartAsync();
+    }
+}
