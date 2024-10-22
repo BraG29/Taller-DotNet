@@ -22,6 +22,11 @@
     <ItemGroup>
 <!--        <ProjectReference Include="..\Monitor-Client\Monitor-Client.csproj" />-->
         <ProjectReference Include="..\Commercial-Office\Commercial-Office.csproj" />
+        <ProjectReference Include="..\Quality-Management\Quality-Management\Quality-Management.csproj" />
+        
+<!-- Por el momento no parece necesario agregar el cliente, con solo levantar el servidor es suficiente -->
+<!--        <ProjectReference Include="..\Quality-Management\Quality-Management.Client\Quality-Management.Client.csproj" />-->
+        
     </ItemGroup>
     
     <ItemGroup>
