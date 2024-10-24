@@ -280,6 +280,7 @@ namespace Commercial_Office.Controllers
         {
             try
             {
+                Console.WriteLine("Asignando usuario  al puesto :" + placeNumber + " de la oficina: " + officeId);
                 _officeService.ReleasePosition(officeId, placeNumber);
                 return Ok("Oficina liberada con exito");
             }
@@ -306,6 +307,51 @@ namespace Commercial_Office.Controllers
            
         }
 
+        /// <summary>
+        /// Llamar al siguiente usuario en la cola
+        /// </summary>
+        /// <param name="officeId"> Numero de la oficina donde se encuentra el puesto</param>
+        /// <param name="placeNumber"> Numero de puesto, el mismo no puede ser menor a 0</param>
+        /// <response code="200"> Retorna un mensaje si asigno el usuario de la cola al puesto</response>
+        /// <response code="404"> Si no se pudo encontrar la oficina</response>
+        /// <response code="500"> Si ocurrio un error interno</response>
+        /// <response code="400"> Si se ingresaron parametros vacios o incorrectos (Numero de puesto menor a 0)</response>
+        /// <response code="409"> Si se intenta asignar un usuario a un puesto ocupado</response>
+        [HttpPut]
+        [Route("nextUser")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public ActionResult<string> nextUser(string officeId, long placeNumber)
+        {
+            try
+            {
+                _officeService.callNextUser(officeId, placeNumber);
+                return Ok("Usuario asignado existosamente al puesto " + placeNumber);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al asignar: " + ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest("Fallo al asignar: " + ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound("Fallo al asignar: " + ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound("Fallo al asignar: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocurrió un error inesperado." + ex.Message);
+            }
+        }
         
     }
 

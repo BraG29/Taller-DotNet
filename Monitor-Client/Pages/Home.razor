@@ -3,33 +3,10 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Cedula: @model.clientCi | Puesto: @model.attentionPlace | Oficina: @model.officeId</h1>
+<h1>Para testear dirigase a la pestaña del monitor</h1>
 
 @code{
 
-    HubConnection _connection;
 
-    class Model
-    {
-        public string clientCi { get; set; }
-        public long attentionPlace { get; set; }
-        public string officeId { get; set; }
-    }
 
-    Model model = new Model();
-    
-    protected override async Task OnInitializedAsync()
-    {
-        _connection = new HubConnectionBuilder().WithUrl("http://localhost:5030/commercial-office/hub").Build();
-
-        _connection.On("RefreshMonitor", (string userId, long post, string officeId) =>
-        {
-            Console.WriteLine($"Datos recibidos mediante SignalR: {userId}, {post}, {officeId}");
-            model.clientCi = userId;
-            model.attentionPlace = post;
-            model.officeId = officeId;
-        });
-
-        await _connection.StartAsync();
-    }
 }
