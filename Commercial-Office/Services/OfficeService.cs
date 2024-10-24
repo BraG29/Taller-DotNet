@@ -1,7 +1,6 @@
 ﻿using Commercial_Office.Model;
 using Commercial_Office.DTO;
 using System.Collections.Concurrent;
-using Commercial_Office.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using static Commercial_Office.Model.Office;
 using Microsoft.Extensions.Logging;
@@ -13,14 +12,13 @@ namespace Commercial_Office.Services
 
         private readonly IOfficeRepository _officeRepository;
         private readonly ILogger<OfficeService> _logger;
-        private readonly IHubContext<CommercialOfficeHub> _hub;
+        private readonly HubService _hubService;
         
         public OfficeService(IOfficeRepository officeRepository, ILogger<OfficeService> logger,
-            IHubContext<CommercialOfficeHub> hub) {
+            HubService service) {
             _officeRepository = officeRepository;
             _logger = logger;
-            _hub = hub;
-
+            _hubService = service;
         }
         
         public void CreateOffice(OfficeDTO officeDTO)
@@ -244,7 +242,7 @@ namespace Commercial_Office.Services
             office.UserQueue.Enqueue(user);
         }
 
-        public void ReleasePosition(string officeId, long placeNumber)
+        public async Task ReleasePosition(string officeId, long placeNumber)
         {
 
             if (officeId == null)
@@ -276,9 +274,9 @@ namespace Commercial_Office.Services
 
                     place.IsAvailable = true; //libero el puesto
 
-                    //TODO:
-                    //preguntar a los pibes si en este else se debe hacer algún control más.
-                    _hub.Clients.All.SendAsync("RefreshMonitor", "remove", place.Number, officeId);
+
+                    //Se utiliza hubService para eliminar el usuario del monitor
+                    await  _hubService.eraseInMonitor(placeNumber, officeId);
                 }
                 else //Si el puesto ya se encuentra libre
                 {
@@ -292,7 +290,7 @@ namespace Commercial_Office.Services
 
         }
 
-        public void callNextUser(string  officeId, long placeNumber)
+        public async Task CallNextUser(string  officeId, long placeNumber)
         {
             if (officeId == null)
             {
@@ -327,7 +325,10 @@ namespace Commercial_Office.Services
                 if (office.UserQueue.TryDequeue(out TimedQueueItem<string>? userId))
                 {
                     place.IsAvailable = false; //ocupo el puesto
-                    _hub.Clients.All.SendAsync("RefreshMonitor", userId.Item, place.Number, officeId);
+
+                    //se utiliza el hubService para enviar los datos y mostrar al usuario en el monitor
+                   await _hubService.refreshMonitor(userId.Item, placeNumber, officeId);
+
                 }
                 else
                 {
