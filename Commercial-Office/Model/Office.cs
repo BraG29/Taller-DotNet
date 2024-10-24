@@ -30,23 +30,7 @@ namespace Commercial_Office.Model
             this.AttentionPlaceList = attentionPlaceList;
         }
 
-        public long IsAvailable()
-        {
-            if (this.AttentionPlaceList != null)
-            {
-                foreach (AttentionPlace attentionPlace in this.AttentionPlaceList)
-                {
-                    if (attentionPlace.IsAvailable) 
-                    {
-                        return (long)attentionPlace.Number;
-                    }
-                }
-                return -1;
-            }
-            return -1;
-        }
-
-        public void OcupyAttentionPlace(ulong postId)
+       /* public void OcupyAttentionPlace(ulong postId)
         {
             if (this.AttentionPlaceList != null)
             {
@@ -54,11 +38,18 @@ namespace Commercial_Office.Model
                 {
                     if (attentionPlace.Number == postId) 
                     {
+                        if (!attentionPlace.IsAvailable)
+                        {
+                            throw new ArgumentException($"El puesto no esta libre");
+                        }
+
                         attentionPlace.IsAvailable = false;
                     }
                 }
+
+                //throw new KeyNotFoundException($"No existe dicho puesto" + postId);
             }
-        }
+        }*/
 
     }
 }
