@@ -1,9 +1,8 @@
 ﻿using Commercial_Office.DTO;
-using Commercial_Office.Model;
 using Commercial_Office.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
-using System.Runtime.InteropServices;
+using System.Numerics;
 
 
 namespace Commercial_Office.Controllers
@@ -153,6 +152,10 @@ namespace Commercial_Office.Controllers
                 _officeService.CreateOffice(officeDTO);
                 return Ok("Oficina creada con exito.");
             }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al liberar: " + ex.Message);
+            }
             catch (ArgumentException ex)
             {
                 return BadRequest("Fallo al crear la oficina: " + ex.Message);
@@ -164,15 +167,85 @@ namespace Commercial_Office.Controllers
 
         }
 
+
+        /// <summary>
+        /// Actualizar oficina
+        /// </summary>
+        /// <param name="officeId"> Identificador de la oficina</param>
+        /// <param name="places">Lista de puestos de la oficina</param>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///         "attentionPlaces": [
+        ///             {
+        ///                 "number": 5,
+        ///                 "available": false
+        ///             },
+        ///             {
+        ///                 "number": 6,
+        ///                 "available": false
+        ///             }
+        ///         ]
+        ///
+        /// </remarks>
+        /// <response code="200">Si se pudo actualizar la oficina</response>
+        /// <response code="404">Si no existe la oficina</response>
+        /// <response code="400">Si no se pudo actualizar la oficina, por argumentos invalidos</response>
+        /// <response code="500">Si ocurrió un error interno</response>
         [HttpPut]
-        [Route("registerUser")]
-        public ActionResult<string> registerUser(string userId, string officeId)
+        [Route("updateOffice/{officeId}")]
+        public ActionResult<IList<AttentionPlaceDTO>> updateOffice(string officeId, [FromBody] IList<AttentionPlaceDTO> places)
         {
 
             try
             {
+                _officeService.UpdateOffice(officeId, places);
+                return Ok("Puestos de oficina actualizados exitosamente.");
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al actualizar: " + ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest("Fallo al actualizar: " + ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound("Fallo al actualizar: " + ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound("Fallo al actualizar: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocurrió un error inesperado." + ex.Message);
+            }
+        }
+
+
+        /// <summary>
+        /// Registrar usuario
+        /// </summary>
+        /// <param name="userId"> Identificador del usuario</param>
+        /// <param name="officeId"> Numero de la oficina a registrar el usuario</param>
+        /// <response code="200"> Retorna un mensaje si registro el usuario</response>
+        /// <response code="404"> Si no se pudo encontrar la oficina</response>
+        /// <response code="500"> Si ocurrio un error interno</response>
+        /// <response code="400"> Si se ingresaron parametros vacios</response>
+        [HttpPut]
+        [Route("registerUser")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult<string> registerUser(string userId, string officeId)
+        {
+            try
+            {
                 _officeService.RegisterUser(userId, officeId);
-                return Ok();
+                return Ok("Usuario registrado con exito");
             }
             catch (ArgumentNullException ex)
             {
@@ -180,35 +253,52 @@ namespace Commercial_Office.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound("Fallo al registrar: " + ex.Message);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, "Ocurrió un error inesperado." + ex.Message);
             }
-
         }
 
+        /// <summary>
+        /// Liberar puesto
+        /// </summary>
+        /// <param name="officeId"> Numero de la oficina donde se encuentra el puesto</param>
+        /// <param name="placeNumber"> Numero de puesto, el mismo no puede ser menor a 0</param>
+        /// <response code="200"> Retorna un mensaje si libero el puesto</response>
+        /// <response code="404"> Si no se pudo encontrar la oficina</response>
+        /// <response code="500"> Si ocurrio un error interno</response>
+        /// <response code="400"> Si se ingresaron parametros vacios o incorrectos (Numero de puesto menor a 0)</response>
         [HttpPut]
         [Route("releasePosition")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<string> releasePosition(string officeId, long placeNumber)
         {
             try
             {
+                Console.WriteLine("Asignando usuario  al puesto :" + placeNumber + " de la oficina: " + officeId);
                 _officeService.ReleasePosition(officeId, placeNumber);
-                return Ok();
+                return Ok("Oficina liberada con exito");
             }
             catch (ArgumentNullException ex)
             {
                 return BadRequest("Fallo al liberar: " + ex.Message);
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest("Fallo al liberar: " + ex.Message);
+            }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound("Fallo al liberar: " + ex.Message);
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound("Fallo al liberar: " + ex.Message);
             }
             catch (Exception ex)
             {
@@ -217,6 +307,51 @@ namespace Commercial_Office.Controllers
            
         }
 
+        /// <summary>
+        /// Llamar al siguiente usuario en la cola
+        /// </summary>
+        /// <param name="officeId"> Numero de la oficina donde se encuentra el puesto</param>
+        /// <param name="placeNumber"> Numero de puesto, el mismo no puede ser menor a 0</param>
+        /// <response code="200"> Retorna un mensaje si asigno el usuario de la cola al puesto</response>
+        /// <response code="404"> Si no se pudo encontrar la oficina</response>
+        /// <response code="500"> Si ocurrio un error interno</response>
+        /// <response code="400"> Si se ingresaron parametros vacios o incorrectos (Numero de puesto menor a 0)</response>
+        /// <response code="409"> Si se intenta asignar un usuario a un puesto ocupado</response>
+        [HttpPut]
+        [Route("nextUser")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public ActionResult<string> nextUser(string officeId, long placeNumber)
+        {
+            try
+            {
+                _officeService.callNextUser(officeId, placeNumber);
+                return Ok("Usuario asignado existosamente al puesto " + placeNumber);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al asignar: " + ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest("Fallo al asignar: " + ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound("Fallo al asignar: " + ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound("Fallo al asignar: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocurrió un error inesperado." + ex.Message);
+            }
+        }
         
     }
 

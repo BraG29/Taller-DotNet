@@ -19,5 +19,4 @@
         <ProjectReference Include="..\DotNET-APP.ServiceDefauts\DotNET-APP.ServiceDefauts.csproj" />
     </ItemGroup>
 
-
 </Project>
