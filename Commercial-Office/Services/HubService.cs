@@ -5,7 +5,7 @@ namespace Commercial_Office.Services
 {
     public class HubService 
     {
-
+        
         private HubConnection _connection;
 
         public HubService()

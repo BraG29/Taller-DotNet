@@ -3,7 +3,6 @@ using Commercial_Office.Infraestructure;
 using Commercial_Office.Model;
 using Commercial_Office.Services;
 using System.Reflection;
-using Commercial_Office.Hubs;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
