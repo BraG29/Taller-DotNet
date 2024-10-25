@@ -48,7 +48,7 @@ namespace Commercial_Office.Services
         /// </summary>
         /// <param name="officeId"></param>
         /// <param name="placeNumber"></param>
-        public void ReleasePosition(string officeId, long placeNumber);
+        public Task ReleasePosition(string officeId, long placeNumber);
 
         /// <summary>
         /// Funcion para que un usuario (operador) solicite que se le asigne el siguiente
@@ -56,6 +56,6 @@ namespace Commercial_Office.Services
         /// </summary>
         /// <param name="officeId"></param>
         /// <param name="placeNumber"></param>
-        public void callNextUser(string officeId, long placeNumber);
+        public Task CallNextUser(string officeId, long placeNumber);
     }
 }
