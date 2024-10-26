@@ -5,7 +5,7 @@ namespace Commercial_Office.Services
 {
     public class HubService 
     {
-        
+        /*
         private HubConnection _connection;
 
         public HubService()
@@ -32,6 +32,6 @@ namespace Commercial_Office.Services
             await _connection.SendAsync("RefreshMonitor", "remove", placeNumber, officeId);
         }
 
-
+        */
     }
 }

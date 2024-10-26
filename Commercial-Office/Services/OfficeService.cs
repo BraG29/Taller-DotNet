@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using Microsoft.AspNetCore.SignalR;
 using static Commercial_Office.Model.Office;
 using Microsoft.Extensions.Logging;
+using Commercial_Office.Hubs;
 
 namespace Commercial_Office.Services 
 {
@@ -13,12 +14,14 @@ namespace Commercial_Office.Services
         private readonly IOfficeRepository _officeRepository;
         private readonly ILogger<OfficeService> _logger;
         private readonly HubService _hubService;
-        
+        private readonly IHubContext<CommercialOfficeHub> _hub;
+
         public OfficeService(IOfficeRepository officeRepository, ILogger<OfficeService> logger,
-            HubService service) {
+            HubService service, IHubContext<CommercialOfficeHub> hub) {
             _officeRepository = officeRepository;
             _logger = logger;
             _hubService = service;
+            _hub = hub;
         }
         
         public void CreateOffice(OfficeDTO officeDTO)
@@ -46,7 +49,7 @@ namespace Commercial_Office.Services
                         }
 
                         ulong placeNumber = (ulong)place.Number;
-                        AttentionPlace attentionPlace = new AttentionPlace(placeNumber, false);
+                        AttentionPlace attentionPlace = new AttentionPlace(placeNumber, false, "0");
                         attentionPlaces.Add(attentionPlace);
                     }
                 }
@@ -101,7 +104,7 @@ namespace Commercial_Office.Services
                     else
                     {
                         //si no existe agrego a la lista
-                        office.AttentionPlaceList.Add(new AttentionPlace((ulong)placeDTO.Number, placeDTO.Available));
+                        office.AttentionPlaceList.Add(new AttentionPlace((ulong)placeDTO.Number, placeDTO.Available, "0"));
                     }
                 }
                 catch (InvalidOperationException)
@@ -276,7 +279,7 @@ namespace Commercial_Office.Services
 
 
                     //Se utiliza hubService para eliminar el usuario del monitor
-                    await  _hubService.eraseInMonitor(placeNumber, officeId);
+                    //await  _hubService.eraseInMonitor(placeNumber, officeId);
                 }
                 else //Si el puesto ya se encuentra libre
                 {
@@ -327,7 +330,7 @@ namespace Commercial_Office.Services
                     place.IsAvailable = false; //ocupo el puesto
 
                     //se utiliza el hubService para enviar los datos y mostrar al usuario en el monitor
-                   await _hubService.refreshMonitor(userId.Item, placeNumber, officeId);
+                   //await _hubService.refreshMonitor(userId.Item, placeNumber, officeId);
 
                 }
                 else

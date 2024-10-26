@@ -1,13 +1,23 @@
-using k8s.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Identity.Web;
+using API_Gateway.Services;
+using ServiceDefaults;
 
-var builder = DistributedApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
-//var monitorClient = builder.AddProject<Projects.Monitor_Client>("monitor-client");
- var comercialOffice = builder.AddProject<Projects.Commercial_Office>("commercial-office");
+builder.AddServiceDefaults();
+
+builder.Services.AddControllers();
+
+builder.Services.AddHttpClient<CommercialOfficeService>(static client =>
+{
+    client.BaseAddress = new("http://commercial-office");
+});
 
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();
