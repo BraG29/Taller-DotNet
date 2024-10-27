@@ -19,6 +19,7 @@
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0"/>
         <ProjectReference Include="..\Commercial-Office\Commercial-Office.csproj"/>
         <ProjectReference Include="..\API-Gateway\API-Gateway.csproj"/>
+        <ProjectReference Include="..\Quality-Management\Quality-Management.csproj"/>
     </ItemGroup>
 
 </Project>
