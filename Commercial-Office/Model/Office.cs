@@ -30,35 +30,5 @@ namespace Commercial_Office.Model
             this.AttentionPlaceList = attentionPlaceList;
         }
 
-        public long IsAvailable()
-        {
-            if (this.AttentionPlaceList != null)
-            {
-                foreach (AttentionPlace attentionPlace in this.AttentionPlaceList)
-                {
-                    if (attentionPlace.IsAvailable) 
-                    {
-                        return (long)attentionPlace.Number;
-                    }
-                }
-                return -1;
-            }
-            return -1;
-        }
-
-        public void OcupyAttentionPlace(ulong postId)
-        {
-            if (this.AttentionPlaceList != null)
-            {
-                foreach (AttentionPlace attentionPlace in this.AttentionPlaceList)
-                {
-                    if (attentionPlace.Number == postId) 
-                    {
-                        attentionPlace.IsAvailable = false;
-                    }
-                }
-            }
-        }
-
     }
 }

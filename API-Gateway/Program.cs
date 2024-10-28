@@ -1,10 +1,9 @@
-using k8s.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Identity.Web;
+using API_Gateway.Services;
+using ServiceDefaults;
 
-var builder = DistributedApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
+<<<<<<< HEAD
 // var monitorClient = builder.AddProject<Projects.Monitor_Client>("monitor-client");
 
 var comercialOffice = builder
@@ -13,7 +12,26 @@ var comercialOffice = builder
 var qualityManagement = builder
     .AddProject<Projects.Quality_Management>("quality-management");
 
+=======
+builder.AddServiceDefaults();
+
+builder.Services.AddControllers();
+
+builder.Services.AddHttpClient<CommercialOfficeService>(static client =>
+{
+    /*
+     * El nombre usado para el servicio fue el que previamente le configuramos en la app host
+     */
+    client.BaseAddress = new("http://commercial-office");
+});
+>>>>>>> DOTNET-7-Commercial-Office
 
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();

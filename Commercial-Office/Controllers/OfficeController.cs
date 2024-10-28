@@ -31,7 +31,7 @@ namespace Commercial_Office.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<IList<OfficeDTO>> getOffices()
+        public ActionResult<IList<OfficeDTO>> GetOffices()
         {
             try
             {
@@ -58,7 +58,7 @@ namespace Commercial_Office.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<OfficeDTO> getOffice(string id) {
+        public ActionResult<OfficeDTO> GetOffice(string id) {
             try
             {
                 var officeDTO = this._officeService.GetOffice(id);
@@ -90,7 +90,7 @@ namespace Commercial_Office.Controllers
         [Route("deleteOffice/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<OfficeDTO> deleteOffice(string id)
+        public ActionResult<OfficeDTO> DeleteOffice(string id)
         {
 
             try
@@ -145,7 +145,7 @@ namespace Commercial_Office.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<OfficeDTO> createOffice(OfficeDTO officeDTO)
+        public ActionResult<OfficeDTO> CreateOffice(OfficeDTO officeDTO)
         {
             try
             {
@@ -194,7 +194,7 @@ namespace Commercial_Office.Controllers
         /// <response code="500">Si ocurrió un error interno</response>
         [HttpPut]
         [Route("updateOffice/{officeId}")]
-        public ActionResult<IList<AttentionPlaceDTO>> updateOffice(string officeId, [FromBody] IList<AttentionPlaceDTO> places)
+        public ActionResult<IList<AttentionPlaceDTO>> UpdateOffice(string officeId, [FromBody] IList<AttentionPlaceDTO> places)
         {
 
             try
@@ -240,7 +240,7 @@ namespace Commercial_Office.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<string> registerUser(string userId, string officeId)
+        public ActionResult<string> RegisterUser(string userId, string officeId)
         {
             try
             {
@@ -276,11 +276,12 @@ namespace Commercial_Office.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<string> releasePosition(string officeId, long placeNumber)
+        public async Task<ActionResult<string>> ReleasePosition(string officeId, long placeNumber)
         {
             try
             {
-                _officeService.ReleasePosition(officeId, placeNumber);
+                Console.WriteLine("Asignando usuario  al puesto :" + placeNumber + " de la oficina: " + officeId);
+                await _officeService.ReleasePosition(officeId, placeNumber);
                 return Ok("Oficina liberada con exito");
             }
             catch (ArgumentNullException ex)
@@ -306,6 +307,49 @@ namespace Commercial_Office.Controllers
            
         }
 
+        /// <summary>
+        /// Llamar al siguiente usuario en la cola
+        /// </summary>
+        /// <param name="officeId"> Numero de la oficina donde se encuentra el puesto</param>
+        /// <param name="placeNumber"> Numero de puesto, el mismo no puede ser menor a 0</param>
+        /// <response code="200"> Retorna un mensaje si asigno el usuario de la cola al puesto</response>
+        /// <response code="404"> Si no se pudo encontrar la oficina</response>
+        /// <response code="500"> Si ocurrio un error interno</response>
+        /// <response code="400"> Si se ingresaron parametros vacios o incorrectos (Numero de puesto menor a 0)</response>
+        [HttpPut]
+        [Route("nextUser")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<string>> NextUser(string officeId, long placeNumber)
+        {
+            try
+            {
+                await _officeService.CallNextUser(officeId, placeNumber);
+                return Ok("Usuario asignado existosamente al puesto " + placeNumber);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al asignar: " + ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest("Fallo al asignar: " + ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound("Fallo al asignar: " + ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound("Fallo al asignar: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocurrió un error inesperado." + ex.Message);
+            }
+        }
         
     }
 

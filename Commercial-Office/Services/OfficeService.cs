@@ -1,9 +1,10 @@
 ﻿using Commercial_Office.Model;
 using Commercial_Office.DTO;
 using System.Collections.Concurrent;
-using Commercial_Office.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using static Commercial_Office.Model.Office;
+using Microsoft.Extensions.Logging;
+using Commercial_Office.Hubs;
 
 namespace Commercial_Office.Services 
 {
@@ -12,18 +13,22 @@ namespace Commercial_Office.Services
 
         private readonly IOfficeRepository _officeRepository;
         private readonly ILogger<OfficeService> _logger;
+        private readonly HubService _hubService;
         private readonly IHubContext<CommercialOfficeHub> _hub;
-        
+        private readonly QualityManagementService  _qualityManagementService;
+
         public OfficeService(IOfficeRepository officeRepository, ILogger<OfficeService> logger,
-            IHubContext<CommercialOfficeHub> hub) {
+            HubService service, IHubContext<CommercialOfficeHub> hub, QualityManagementService qualityManagementService) {
             _officeRepository = officeRepository;
             _logger = logger;
+            _hubService = service;
             _hub = hub;
-
+            _qualityManagementService = qualityManagementService;
         }
         
         public void CreateOffice(OfficeDTO officeDTO)
         {
+
             if (officeDTO.Identificator != null)
             {
     
@@ -47,7 +52,7 @@ namespace Commercial_Office.Services
                         }
 
                         ulong placeNumber = (ulong)place.Number;
-                        AttentionPlace attentionPlace = new AttentionPlace(placeNumber, false);
+                        AttentionPlace attentionPlace = new AttentionPlace(placeNumber, false, "0");
                         attentionPlaces.Add(attentionPlace);
                     }
                 }
@@ -102,7 +107,7 @@ namespace Commercial_Office.Services
                     else
                     {
                         //si no existe agrego a la lista
-                        office.AttentionPlaceList.Add(new AttentionPlace((ulong)placeDTO.Number, placeDTO.Available));
+                        office.AttentionPlaceList.Add(new AttentionPlace((ulong)placeDTO.Number, placeDTO.Available, "0"));
                     }
                 }
                 catch (InvalidOperationException)
@@ -226,7 +231,7 @@ namespace Commercial_Office.Services
 
 
 
-        public async void RegisterUser(string userId, string officeId)
+        public void RegisterUser(string userId, string officeId)
         {
             if (userId == null || officeId == null)
             {
@@ -239,29 +244,77 @@ namespace Commercial_Office.Services
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
             }
 
-            //Esto me retorna un numero: busca el primer puesto libre de la lista de puestos de la oficina
-            var post = office.IsAvailable();
+            TimedQueueItem<string> user = new TimedQueueItem<string>(userId);
+            office.UserQueue.Enqueue(user);
+        }
 
-            if (post == -1)
+        public async Task CallNextUser(string officeId, long placeNumber)
+        {
+            if (officeId == null)
             {
-                //no hay puesto disponible coloco al cliente en la queue
-
-                TimedQueueItem<string> user = new TimedQueueItem<string>(userId);
-                office.UserQueue.Enqueue(user);
-                Console.WriteLine("Usuario entra a la queue");
+                throw new ArgumentNullException($"Identificadores invalidos (no pueden ser menores a 0) o vacios");
             }
-            else
+
+            if (placeNumber < 0)
             {
-                /*
-                 * TODO: Cambiar el llamado de "All" a "AllExcept" para no enviar los datos al servicio de QM cuando este implementado
-                 */
-                await _hub.Clients.All.SendAsync("RefreshMonitor", userId, post, officeId);
-                office.OcupyAttentionPlace((ulong)post);
+                throw new ArgumentException($"No se aceptan números menores a 0");
+            }
+
+            Office office = this._officeRepository.GetOffice(officeId);
+            if (office == null)
+            {
+                throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
+            }
+
+            ulong placeNumberCast = (ulong)placeNumber;
+
+            try
+            {
+                //obtener el puesto que coincida con el numero
+                AttentionPlace place = office.AttentionPlaceList
+                    .First(place => place.Number == placeNumberCast);
+
+                if (!place.IsAvailable)//si el puesto esta ocupado
+                {
+                    throw new ArgumentException($"El puesto esta ocupado");
+                }
+
+                //Si hay usuarios en la queue saco uno para ocupar el puesto desde el que lo llaman
+                if (office.UserQueue.TryDequeue(out TimedQueueItem<string>? userId))
+                {
+                    place.IsAvailable = false; //ocupo el puesto
+
+
+                    //llamo endpoint que me devuelve id de tramite y seteo el atributo ProcessId del lugar
+                    string procedureId = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.UtcNow);
+
+                    if (procedureId == null)
+                    {
+                        throw new ArgumentNullException($"Identificadores de tramite vacio");
+                    }
+
+                    place.ProcedureId = procedureId;
+
+                    //TODO: Consultar
+                    //desde Apigateway
+                    _hub.Clients.All.SendAsync("RefreshMonitor", userId.Item, place.Number, officeId);
+
+                }
+                else
+                {
+                    throw new KeyNotFoundException($"No hay usuarios en la cola");
+                }
+
+            }
+            catch (InvalidOperationException)
+            {
+                throw new InvalidOperationException($"No existe el puesto");
             }
 
         }
 
-        public void ReleasePosition(string officeId, long placeNumber)
+
+        public async Task ReleasePosition(string officeId, long placeNumber)
         {
 
             if (officeId == null)
@@ -290,14 +343,18 @@ namespace Commercial_Office.Services
 
                 if (!place.IsAvailable)//si el puesto esta ocupado
                 {
+
                     place.IsAvailable = true; //libero el puesto
 
-                    //Si hay usuarios disponibles en la cola saco uno y ocupo el puesto con ese usuario.
-                    if (office.UserQueue.TryDequeue(out TimedQueueItem<string>? userId))
-                    {
-                        _hub.Clients.All.SendAsync("RefreshMonitor", userId, place.Number, officeId);
-                        office.OcupyAttentionPlace(place.Number);
-                    }
+                    //llamada a endpoint de qualityManagement para finalizar tramite
+                    var task = _qualityManagementService.FinishProcedure(place.ProcedureId, DateTime.UtcNow);
+
+                    //TODO: Consultar
+                    //desde Apigateway
+
+                    _hub.Clients.All.SendAsync("RefreshMonitor", "remove", place.Number, officeId); 
+
+                    await task;
                 }
                 else //Si el puesto ya se encuentra libre
                 {
@@ -310,6 +367,8 @@ namespace Commercial_Office.Services
             }
 
         }
+
+
 
 
         //FUNCIONES DE METRICAS

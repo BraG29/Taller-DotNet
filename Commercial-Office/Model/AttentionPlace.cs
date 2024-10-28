@@ -6,14 +6,15 @@
         
         public bool IsAvailable { get; set; }
 
-
+        public string ProcedureId { get; set; }
 
         public AttentionPlace() { }
 
-        public AttentionPlace(ulong number, bool isAvailable)
+        public AttentionPlace(ulong number, bool isAvailable, string procedureId)
         {
             Number = number;
             IsAvailable = isAvailable;
+            ProcedureId = procedureId;
         }
     }
 }
