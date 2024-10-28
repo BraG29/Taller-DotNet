@@ -19,6 +19,7 @@
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="xUnit" Version="2.9.2" />
+	<ProjectReference Include="..\DotNET-APP.ServiceDefauts\DotNET-APP.ServiceDefauts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

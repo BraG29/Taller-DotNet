@@ -6,6 +6,8 @@ namespace Commercial_Office.Services
     public class HubService 
     {
         /*
+         * Esto deberia comunicarse con apiGateway en lugar de clientMonitor
+         * 
         private HubConnection _connection;
 
         public HubService()

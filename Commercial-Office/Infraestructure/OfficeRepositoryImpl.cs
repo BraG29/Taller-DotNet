@@ -17,8 +17,8 @@ namespace Commercial_Office.Infraestructure
             ConcurrentQueue<TimedQueueItem<string>> _OfficeQueue1 = new ConcurrentQueue<TimedQueueItem<string>>();
 
             IList<AttentionPlace> attentionPlaces = new List<AttentionPlace>();
-            AttentionPlace _AttentionPlace1 = new AttentionPlace(1, true);
-            AttentionPlace _AttentionPlace2 = new AttentionPlace(2, true);
+            AttentionPlace _AttentionPlace1 = new AttentionPlace(1, true, "0");
+            AttentionPlace _AttentionPlace2 = new AttentionPlace(2, true, "0");
             attentionPlaces.Add(_AttentionPlace1);
             attentionPlaces.Add(_AttentionPlace2);
             Office office1 = new Office("OFI-1", _OfficeQueue1, attentionPlaces);
@@ -27,8 +27,8 @@ namespace Commercial_Office.Infraestructure
             ConcurrentQueue<TimedQueueItem<string>> _OfficeQueue2 = new ConcurrentQueue<TimedQueueItem<string>>();
 
             IList<AttentionPlace> attentionPlaces2 = new List<AttentionPlace>();
-            AttentionPlace _AttentionPlace3 = new AttentionPlace(3, true);
-            AttentionPlace _AttentionPlace4 = new AttentionPlace(4, true);
+            AttentionPlace _AttentionPlace3 = new AttentionPlace(3, true, "0");
+            AttentionPlace _AttentionPlace4 = new AttentionPlace(4, true, "0");
             attentionPlaces2.Add(_AttentionPlace3);
             attentionPlaces2.Add(_AttentionPlace4);
             Office office2 = new Office("OFI-2", _OfficeQueue2, attentionPlaces2);

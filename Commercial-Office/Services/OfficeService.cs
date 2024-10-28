@@ -15,17 +15,20 @@ namespace Commercial_Office.Services
         private readonly ILogger<OfficeService> _logger;
         private readonly HubService _hubService;
         private readonly IHubContext<CommercialOfficeHub> _hub;
+        private readonly QualityManagementService  _qualityManagementService;
 
         public OfficeService(IOfficeRepository officeRepository, ILogger<OfficeService> logger,
-            HubService service, IHubContext<CommercialOfficeHub> hub) {
+            HubService service, IHubContext<CommercialOfficeHub> hub, QualityManagementService qualityManagementService) {
             _officeRepository = officeRepository;
             _logger = logger;
             _hubService = service;
             _hub = hub;
+            _qualityManagementService = qualityManagementService;
         }
         
         public void CreateOffice(OfficeDTO officeDTO)
         {
+
             if (officeDTO.Identificator != null)
             {
     
@@ -245,55 +248,7 @@ namespace Commercial_Office.Services
             office.UserQueue.Enqueue(user);
         }
 
-        public async Task ReleasePosition(string officeId, long placeNumber)
-        {
-
-            if (officeId == null)
-            {
-                throw new ArgumentNullException($"Identificadores invalidos (no pueden ser menores a 0) o vacios");
-            }
-
-            if(placeNumber < 0  )
-            {
-                throw new ArgumentException($"No se aceptan números menores a 0");
-            }
-
-            Office office = this._officeRepository.GetOffice(officeId);
-            if (office == null)
-            {
-                throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
-            }
-
-            ulong placeNumberCast = (ulong)placeNumber;
-
-            try
-            {
-                //obtener el puesto que coincida con el numero
-                AttentionPlace place = office.AttentionPlaceList
-                    .First(place => place.Number == placeNumberCast);
-
-                if (!place.IsAvailable)//si el puesto esta ocupado
-                {
-
-                    place.IsAvailable = true; //libero el puesto
-
-
-                    //Se utiliza hubService para eliminar el usuario del monitor
-                    //await  _hubService.eraseInMonitor(placeNumber, officeId);
-                }
-                else //Si el puesto ya se encuentra libre
-                {
-                    throw new ArgumentException($"El puesto ya se encuentra liberado");
-                }
-            }
-            catch (InvalidOperationException)
-            {
-                throw new InvalidOperationException($"No existe el puesto");
-            }
-
-        }
-
-        public async Task CallNextUser(string  officeId, long placeNumber)
+        public async Task CallNextUser(string officeId, long placeNumber)
         {
             if (officeId == null)
             {
@@ -329,8 +284,20 @@ namespace Commercial_Office.Services
                 {
                     place.IsAvailable = false; //ocupo el puesto
 
-                    //se utiliza el hubService para enviar los datos y mostrar al usuario en el monitor
-                   //await _hubService.refreshMonitor(userId.Item, placeNumber, officeId);
+
+                    //llamo endpoint que me devuelve id de tramite y seteo el atributo ProcessId del lugar
+                    string procedureId = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.UtcNow);
+
+                    if (procedureId == null)
+                    {
+                        throw new ArgumentNullException($"Identificadores de tramite vacio");
+                    }
+
+                    place.ProcedureId = procedureId;
+
+                    //TODO: Consultar
+                    //desde Apigateway
+                    _hub.Clients.All.SendAsync("RefreshMonitor", userId.Item, place.Number, officeId);
 
                 }
                 else
@@ -343,8 +310,65 @@ namespace Commercial_Office.Services
             {
                 throw new InvalidOperationException($"No existe el puesto");
             }
- 
+
         }
+
+
+        public async Task ReleasePosition(string officeId, long placeNumber)
+        {
+
+            if (officeId == null)
+            {
+                throw new ArgumentNullException($"Identificadores invalidos (no pueden ser menores a 0) o vacios");
+            }
+
+            if(placeNumber < 0  )
+            {
+                throw new ArgumentException($"No se aceptan números menores a 0");
+            }
+
+            Office office = this._officeRepository.GetOffice(officeId);
+            if (office == null)
+            {
+                throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
+            }
+
+            ulong placeNumberCast = (ulong)placeNumber;
+
+            try
+            {
+                //obtener el puesto que coincida con el numero
+                AttentionPlace place = office.AttentionPlaceList
+                    .First(place => place.Number == placeNumberCast);
+
+                if (!place.IsAvailable)//si el puesto esta ocupado
+                {
+
+                    place.IsAvailable = true; //libero el puesto
+
+                    //llamada a endpoint de qualityManagement para finalizar tramite
+                    var task = _qualityManagementService.FinishProcedure(place.ProcedureId, DateTime.UtcNow);
+
+                    //TODO: Consultar
+                    //desde Apigateway
+
+                    _hub.Clients.All.SendAsync("RefreshMonitor", "remove", place.Number, officeId); 
+
+                    await task;
+                }
+                else //Si el puesto ya se encuentra libre
+                {
+                    throw new ArgumentException($"El puesto ya se encuentra liberado");
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                throw new InvalidOperationException($"No existe el puesto");
+            }
+
+        }
+
+
 
 
         //FUNCIONES DE METRICAS
