@@ -5,10 +5,21 @@ using Commercial_Office.Services;
 using System.Reflection;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Commercial_Office.Hubs;
+using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
 // Add services to the container.
+
+builder.Services.AddHttpClient<QualityManagementService>(static client =>
+{
+    /*
+     * El nombre usado para el servicio fue el que previamente le configuramos en la app host
+     */
+    client.BaseAddress = new("http://quality-management");
+});
 
 //servicio signalR
 builder.Services.AddSignalR();
@@ -21,16 +32,32 @@ builder.Host.UseSerilog((hostBuilderCtx, loggerConf) =>
         .ReadFrom.Configuration(hostBuilderCtx.Configuration);
 });
 
+
+
 //añadir controler singleton
 builder.Services.AddSingleton<IOfficeRepository, OfficeRepositoryImpl>();
 builder.Services.AddSingleton<IOfficeService, OfficeService>();
+builder.Services.AddSingleton<CommercialOfficeHub>();
 builder.Services.AddSingleton<HubService>();
 
 builder.Services.AddControllers();
 
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-
+var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: myAllowSpecificOrigins,
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                .SetIsOriginAllowed(_ => true)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
 
 //https://learn.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-swashbuckle?view=aspnetcore-8.0&tabs=visual-studio
 builder.Services.AddSwaggerGen(options =>
@@ -62,5 +89,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseCors(myAllowSpecificOrigins);
+app.MapHub<CommercialOfficeHub>("/commercial-office/hub");
 
 app.Run();
