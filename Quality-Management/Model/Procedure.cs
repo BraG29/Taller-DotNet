@@ -5,6 +5,7 @@ namespace Quality_Management.Model
 {
     public class Procedure
     {
+
         [Required]
         [Key]
         public long Id { get; init; }
