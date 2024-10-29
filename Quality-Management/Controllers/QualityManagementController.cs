@@ -1,19 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Quality_Management.DataAccess;
+using Quality_Management.DTO;
 using Quality_Management.Model;
+using Quality_Management.Services;
 
 namespace Quality_Management.Controllers
 {
 
     [ApiController]
-    [Route("quality-management")]
+    [Route("quality-management-api")]
     public class QualityManagementController : Controller
     {
         private readonly IProcedureRepository _procedureRepository;
+        private readonly IProcedureService _procedureService;
+        
 
-        public QualityManagementController(IProcedureRepository procedureRepository)
+        public QualityManagementController(IProcedureRepository procedureRepository, IProcedureService procedureService)
         {
             _procedureRepository = procedureRepository;
+            _procedureService = procedureService;
         }
 
         /*
@@ -41,13 +47,23 @@ namespace Quality_Management.Controllers
 
         [HttpPost]
         [Route("createProcedure")]
-        public async Task<ActionResult<Procedure>> CreateProcedure(Procedure procedure)
+        public async Task<ActionResult<long>> CreateProcedure(ProcedureDTO procedure)
         {
 
             try
             {
-                await _procedureRepository.Save(procedure);
-                return Ok("Tramite creado con exito.");
+                Console.WriteLine("Fecha: " + procedure.ProcedureStart.ToString());
+
+                long id = await _procedureService.CreateProcedure(procedure);
+                return Ok(id);
+            }
+            catch(ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al crear tramite ");
+            }
+            catch(DbUpdateException ex)
+            {
+                return Conflict("Fallo al crear el tramite " + ex);
             }
             catch (Exception ex)
             {

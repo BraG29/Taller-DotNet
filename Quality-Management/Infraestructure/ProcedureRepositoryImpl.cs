@@ -13,12 +13,12 @@ namespace Quality_Management.Infraestructure
             _context = context;
         }
 
-        public async Task<Procedure> Save(Procedure procedure)
+        public async Task<long> Save(Procedure procedure)
         {
              _context.Procedures.Add(procedure);
-            await _context.SaveChangesAsync();            
-            //_context.SaveChanges();
-            return procedure;
+            await _context.SaveChangesAsync();     
+            
+            return procedure.Id;
 
         }
 

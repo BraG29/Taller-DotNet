@@ -286,7 +286,10 @@ namespace Commercial_Office.Services
 
 
                     //llamo endpoint que me devuelve id de tramite y seteo el atributo ProcessId del lugar
-                    string procedureId = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.UtcNow);
+
+                    
+
+                    string procedureId = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.Now);
 
                     if (procedureId == null)
                     {
@@ -295,6 +298,12 @@ namespace Commercial_Office.Services
 
                     
                     long procedureIdCast = long.Parse(procedureId);
+
+                    Console.WriteLine(procedureId);
+
+                    _logger.LogInformation("Logger: " +  DateTime.UtcNow.ToString());
+
+                    _logger.LogInformation("Logger: " + procedureId);
 
                     place.ProcedureId = procedureIdCast;
 
