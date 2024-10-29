@@ -17,8 +17,8 @@
         <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="3.2.2"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0"/>
+        <ProjectReference Include="..\API-Gateway\API-Gateway\API-Gateway.csproj"/>
         <ProjectReference Include="..\Commercial-Office\Commercial-Office.csproj"/>
-        <ProjectReference Include="..\API-Gateway\API-Gateway.csproj"/>
         <ProjectReference Include="..\Quality-Management\Quality-Management.csproj"/>
     </ItemGroup>
 
