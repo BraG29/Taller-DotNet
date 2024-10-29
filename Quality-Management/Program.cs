@@ -1,3 +1,6 @@
+using Quality_Management.DataAccess;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,6 +11,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSignalR();
+
+var connectionString = builder.Configuration.GetConnectionString("QMDatabase");
+
+builder.Services.AddDbContext<QualityManagementDbContext>(options => options.UseSqlServer(connectionString));
 
 var app = builder.Build();
 

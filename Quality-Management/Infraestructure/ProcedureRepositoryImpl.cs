@@ -1,32 +1,55 @@
-﻿using Quality_Management.Model;
+﻿using Microsoft.EntityFrameworkCore;
+using Quality_Management.DataAccess;
+using Quality_Management.Model;
 
 namespace Quality_Management.Infraestructure
 {
     public class ProcedureRepositoryImpl : IProcedureRepository
     {
-        public void Add(Procedure procedure)
+        private QualityManagementDbContext _context;
+
+        public ProcedureRepositoryImpl(QualityManagementDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<Procedure> Save(Procedure procedure)
+        {
+            _context.Procedures.Add(procedure);
+            await _context.SaveChangesAsync();
+            return procedure;
+
+        }
+
+        public void Delete(long id)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public IList<Procedure> FindAll()
+        {
+            return _context.Procedures.ToList();
+            throw new NotImplementedException();
+        }
+
+        public Procedure FindById(long id)
         {
             throw new NotImplementedException();
         }
 
-        public void Delete(string id)
+        public async Task<string> Update(Procedure procedure)
         {
-            throw new NotImplementedException();
-        }
+            _context.Entry(procedure).State = EntityState.Modified;
 
-        public IList<Procedure> GetAll()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Procedure GetOffice(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Update(Procedure procedure)
-        {
-            throw new NotImplementedException();
+            try
+            {
+                await _context.SaveChangesAsync();
+                return "SI";
+            }
+            catch (Exception e)
+            {
+                return "NO";
+            }
         }
     }
 }
