@@ -41,17 +41,27 @@ namespace Quality_Management.Controllers
 
         [HttpPost]
         [Route("createProcedure")]
-        public ActionResult<Procedure> CreateProcedure(Procedure procedure)
+        public async Task<ActionResult<Procedure>> CreateProcedure(Procedure procedure)
         {
+
             try
             {
-                _procedureRepository.Save(procedure);
+                await _procedureRepository.Save(procedure);
                 return Ok("Tramite creado con exito.");
             }
             catch (Exception ex)
             {
                 return StatusCode(500, "Ocurrió un error inesperado." + ex.Message);
             }
+
+        }
+
+        [HttpGet]
+        [Route("test")]
+        public ActionResult<string> Test()
+        {
+
+            return "hola";
 
         }
 

@@ -1,5 +1,7 @@
 using Quality_Management.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using Quality_Management.Model;
+using Quality_Management.Infraestructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IProcedureRepository, ProcedureRepositoryImpl>();
 
 builder.Services.AddSignalR();
 
@@ -25,7 +29,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

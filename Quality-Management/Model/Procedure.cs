@@ -13,9 +13,9 @@ namespace Quality_Management.Model
         [Required, StringLength(8)]
         public string OfficeId { get; set; }
         [Column("place_number")]
-        public long PlaceNumber { get; init; }
+        public long PlaceNumber { get; set; }
         [Column("procedure_start")] 
-        public DateTime ProcedureStart { get; init; }
+        public DateTime ProcedureStart { get; set; }
         [Column("procedure_end")] 
         public DateTime? ProcedureEnd { get; set; }
 

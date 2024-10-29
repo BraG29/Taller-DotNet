@@ -15,8 +15,9 @@ namespace Quality_Management.Infraestructure
 
         public async Task<Procedure> Save(Procedure procedure)
         {
-            _context.Procedures.Add(procedure);
-            await _context.SaveChangesAsync();
+             _context.Procedures.Add(procedure);
+            await _context.SaveChangesAsync();            
+            //_context.SaveChanges();
             return procedure;
 
         }
@@ -49,7 +50,7 @@ namespace Quality_Management.Infraestructure
             }
             catch (Exception e)
             {
-                return "NO";
+                return "NO" + e.ToString();
             }
 
         }
