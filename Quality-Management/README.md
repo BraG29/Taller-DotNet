@@ -2,6 +2,7 @@
 
 ## Configuración de persistencia
 * Descargar e instalar [SQL Server](https://www.microsoft.com/es-es/sql-server/sql-server-downloads) (version Express)
+Tirar el siguiente poder dentro de la carpeta de Quality Managment `dotnet tool install --global dotnet-ef`
 * Dentro del proyecto, ejecutar el comando `dotnet ef database update` esto deberia de crear la base de datos
   la cual se llama **Quality_Management_DB** y la tabla de **Procedures** en la misma 
 

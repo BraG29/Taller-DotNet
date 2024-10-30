@@ -1,7 +1,42 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.SignalR.Client;
+@using API_Gateway_Client.DTOs
+@using Newtonsoft.Json;
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
 
-Welcome to your new app.
+<h1>Para testear dirigase a la pestaña del monitor</h1>
+<RadzenButton Click="@ButtonClicked" Text="Hi"></RadzenButton>
+@code{
+
+    static readonly HttpClient client = new HttpClient();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IList<OfficeDTO> offices = new List<OfficeDTO>();
+
+        try
+        {
+            string response = await client.GetStringAsync("http://localhost:5030/office/getAllOffices");
+
+            offices = JsonConvert.DeserializeObject<List<OfficeDTO>>(response);
+
+            Console.WriteLine(offices.Count);
+
+
+            for(int i = 0; offices.Count > i; i++) {
+                Console.WriteLine(offices[i].Identificator);
+            }
+
+        }catch(Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+
+    void ButtonClicked()
+    {
+        Console.WriteLine("La wawa! botón Ryzen pum pere! :D");
+    }
+}
