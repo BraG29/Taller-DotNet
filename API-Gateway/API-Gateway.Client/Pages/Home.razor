@@ -2,10 +2,12 @@
 @using Microsoft.AspNetCore.SignalR.Client;
 @using API_Gateway_Client.DTOs
 @using Newtonsoft.Json;
+
 <PageTitle>Home</PageTitle>
 
-<h1>Para testear dirigase a la pestaña del monitor</h1>
 
+<h1>Para testear dirigase a la pestaña del monitor</h1>
+<RadzenButton Click="@ButtonClicked" Text="Hi"></RadzenButton>
 @code{
 
     static readonly HttpClient client = new HttpClient();
@@ -33,5 +35,8 @@
         }
     }
 
-
+    void ButtonClicked()
+    {
+        Console.WriteLine("La wawa! botón Ryzen pum pere! :D");
+    }
 }
