@@ -1,5 +1,8 @@
 using Quality_Management.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using Quality_Management.Model;
+using Quality_Management.Infraestructure;
+using Quality_Management.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<IProcedureRepository, ProcedureRepositoryImpl>();
+builder.Services.AddScoped<IProcedureService, ProcedureServiceImpl>();
 builder.Services.AddSignalR();
 
 var connectionString = builder.Configuration.GetConnectionString("QMDatabase");
@@ -25,7 +30,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

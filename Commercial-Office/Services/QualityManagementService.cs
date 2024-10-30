@@ -13,15 +13,21 @@
         public async Task<string> StartProcedure(string officeId, long placeNumber, DateTime processStartDate)
         {
 
+          
             var data = new
             {
                 OfficeId = officeId,
                 PlaceNumber = placeNumber,
-                ProcessStartDate = processStartDate
+                procedureStart = processStartDate
+                // 2024/10/29
             };
 
+            Console.WriteLine(data.procedureStart);
+
             var response = await httpClient
-            .PostAsJsonAsync("management/startProcedure", data);
+            .PostAsJsonAsync("quality-management-api/createProcedure", data);
+
+            
 
             return await response.Content.ReadAsStringAsync();
         }
@@ -31,7 +37,7 @@
         /// </summary>
         /// <param name="processId"> Identificador del tramite </param>
         /// <param name="processFinishDate"> Fecha en la que se terminó el tramite </param>
-        public async Task FinishProcedure(string processId, DateTime processFinishDate)
+        public async Task FinishProcedure(long processId, DateTime processFinishDate)
         {
             var data = new
             {

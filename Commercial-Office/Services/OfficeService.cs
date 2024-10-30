@@ -52,7 +52,7 @@ namespace Commercial_Office.Services
                         }
 
                         ulong placeNumber = (ulong)place.Number;
-                        AttentionPlace attentionPlace = new AttentionPlace(placeNumber, false, "0");
+                        AttentionPlace attentionPlace = new AttentionPlace(placeNumber, false, 0);
                         attentionPlaces.Add(attentionPlace);
                     }
                 }
@@ -107,7 +107,7 @@ namespace Commercial_Office.Services
                     else
                     {
                         //si no existe agrego a la lista
-                        office.AttentionPlaceList.Add(new AttentionPlace((ulong)placeDTO.Number, placeDTO.Available, "0"));
+                        office.AttentionPlaceList.Add(new AttentionPlace((ulong)placeDTO.Number, placeDTO.Available, 0));
                     }
                 }
                 catch (InvalidOperationException)
@@ -286,14 +286,26 @@ namespace Commercial_Office.Services
 
 
                     //llamo endpoint que me devuelve id de tramite y seteo el atributo ProcessId del lugar
-                    string procedureId = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.UtcNow);
+
+                    
+
+                    string procedureId = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.Now);
 
                     if (procedureId == null)
                     {
                         throw new ArgumentNullException($"Identificadores de tramite vacio");
                     }
 
-                    place.ProcedureId = procedureId;
+                    
+                    long procedureIdCast = long.Parse(procedureId);
+
+                    Console.WriteLine(procedureId);
+
+                    _logger.LogInformation("Logger: " +  DateTime.UtcNow.ToString());
+
+                    _logger.LogInformation("Logger: " + procedureId);
+
+                    place.ProcedureId = procedureIdCast;
 
                     //TODO: Consultar
                     //desde Apigateway
