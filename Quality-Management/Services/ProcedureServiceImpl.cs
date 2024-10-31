@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Quality_Management.DTO;
 using Quality_Management.Model;
+using System.Data;
 using System.Runtime.CompilerServices;
 
 namespace Quality_Management.Services
@@ -37,22 +38,119 @@ namespace Quality_Management.Services
             {
                 throw new DbUpdateException(ex.ToString());
             }
-           
+
         }
 
-        public void DeleteProcedure(string procedureId)
+        public async Task EndProcedure(long procedureId, DateTime procedureFinishTime)
+        {
+            try
+            {
+
+                var procedure = await _procedureRepository.FindById(procedureId);
+
+                if (procedure == null)
+                {
+                    throw new ArgumentNullException($"El tramite no existe");
+                }
+
+                procedure.ProcedureEnd = procedureFinishTime;
+
+                Console.WriteLine("Estoy actualizando la fecha" + procedure.ProcedureEnd);
+
+                await _procedureRepository.Update(procedure);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new DbUpdateConcurrencyException(ex.ToString());
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new DbUpdateException(ex.ToString());
+            }
+        }
+
+        //cant tramites x oficina
+        //tiempo promedio tramites x oficina
+        public Task<long> ProceduresAmount(string officeId)
         {
             throw new NotImplementedException();
         }
 
-        public IList<ProcedureDTO> GetAll()
+        public Task<double> ProceduresAverageTime(string officeId)
         {
             throw new NotImplementedException();
         }
 
-        public ProcedureDTO GetProcedure(string procedurId)
+    }
+
+}
+
+/*
+public async Task DeleteProcedure(long procedureId)
+{
+
+    try
+    {
+        var procedure = await _procedureRepository.FindById(procedureId);
+
+        if (procedure == null)
         {
-            throw new NotImplementedException();
+            throw new ArgumentNullException($"El tramite no existe");
         }
+
+        await _procedureRepository.Delete(procedure);
+    }
+    catch (DbUpdateException ex)
+    {
+        throw new DbUpdateException(ex.ToString());
+    }
+
+}
+
+}
+
+public async Task<IList<ProcedureDTO>> GetAll()
+{
+    try
+    {
+        var procedureList = await _procedureRepository.FindAll();
+
+        ProcedureDTO procedureDTO;
+        IList<ProcedureDTO> procedureDTOList = new List<ProcedureDTO>();
+
+        foreach (Procedure procedure in procedureList)
+        {
+
+            procedureDTO = new ProcedureDTO(procedure.Id, procedure.OfficeId,
+                procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd);
+
+            procedureDTOList.Add(procedureDTO);
+        }
+
+        return procedureDTOList;
+    }
+    catch(Exception ex) {
+
+        throw new Exception(ex.ToString());
+
     }
 }
+
+public async Task<ProcedureDTO> GetProcedure(long procedureId)
+{
+
+    var procedure = await _procedureRepository.FindById(procedureId);
+
+    if (procedure == null)
+    {
+        throw new ArgumentNullException($"El tramite no existe");
+    }
+
+    //id ,  office, place, start, end.
+    ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.OfficeId,
+        procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd);
+
+    return procedureDTO;
+}
+*/
+
