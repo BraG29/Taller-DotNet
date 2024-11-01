@@ -284,31 +284,19 @@ namespace Commercial_Office.Services
                 {
                     place.IsAvailable = false; //ocupo el puesto
 
-
-                    //llamo endpoint que me devuelve id de tramite y seteo el atributo ProcessId del lugar
-
-                    
-
                     string procedureId = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.Now);
 
                     if (procedureId == null)
                     {
                         throw new ArgumentNullException($"Identificadores de tramite vacio");
                     }
-
                     
                     long procedureIdCast = long.Parse(procedureId);
 
-                    Console.WriteLine(procedureId);
-
-                    _logger.LogInformation("Logger: " +  DateTime.UtcNow.ToString());
-
-                    _logger.LogInformation("Logger: " + procedureId);
-
                     place.ProcedureId = procedureIdCast;
 
-                    //TODO: Consultar
-                    //desde Apigateway
+                    Console.WriteLine("Setenado el id del tramite: " + place.ProcedureId);
+
                     _hub.Clients.All.SendAsync("RefreshMonitor", userId.Item, place.Number, officeId);
 
                 }
@@ -358,15 +346,12 @@ namespace Commercial_Office.Services
 
                     place.IsAvailable = true; //libero el puesto
 
-                    //llamada a endpoint de qualityManagement para finalizar tramite
-                    var task = _qualityManagementService.FinishProcedure(place.ProcedureId, DateTime.UtcNow);
-
-                    //TODO: Consultar
-                    //desde Apigateway
+                    var task = _qualityManagementService.FinishProcedure(place.ProcedureId, DateTime.Now);
+                    await task;
 
                     _hub.Clients.All.SendAsync("RefreshMonitor", "remove", place.Number, officeId); 
 
-                    await task;
+                   
                 }
                 else //Si el puesto ya se encuentra libre
                 {
@@ -379,9 +364,6 @@ namespace Commercial_Office.Services
             }
 
         }
-
-
-
 
         //FUNCIONES DE METRICAS
         //Obtener cant usuarios en espera
