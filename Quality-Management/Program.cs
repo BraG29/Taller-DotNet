@@ -13,6 +13,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<IOfficeRepository, OfficeRepository>();
+builder.Services.AddScoped<IRealTimeMetricsService, RealTimeMetricsService>();
 builder.Services.AddScoped<IProcedureRepository, ProcedureRepositoryImpl>();
 builder.Services.AddScoped<IProcedureService, ProcedureServiceImpl>();
 builder.Services.AddSignalR();

@@ -13,12 +13,14 @@ namespace Quality_Management.Controllers
     public class QualityManagementController : Controller
     {
         private readonly IProcedureService _procedureService;
-        
-        public QualityManagementController(IProcedureService procedureService)
+        private readonly IRealTimeMetricsService _realTimeMetricsService;
+
+        public QualityManagementController(IProcedureService procedureService, IRealTimeMetricsService realTimeMetricsService)
         {
             _procedureService = procedureService;
+            _realTimeMetricsService = realTimeMetricsService;
         }
-
+        
         [HttpPost]
         [Route("startProcedure")]
         public async Task<ActionResult<long>> CreateProcedure(ProcedureDTO procedure)

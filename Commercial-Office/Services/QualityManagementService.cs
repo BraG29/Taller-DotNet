@@ -17,10 +17,10 @@
             {
                 OfficeId = officeId,
                 PlaceNumber = placeNumber,
-                procedureStart = processStartDate
+                ProcedureStart = processStartDate
             };
 
-            Console.WriteLine(data.procedureStart);
+            // Console.WriteLine(data.procedureStart);
 
             var response = await httpClient
             .PostAsJsonAsync("quality-management-api/startProcedure", data);
@@ -37,7 +37,5 @@
         {
             await httpClient.PutAsJsonAsync("quality-management-api/finishProcedure/"+procedureId , procedureFinishDate);
         }
-
-     
     }
 }

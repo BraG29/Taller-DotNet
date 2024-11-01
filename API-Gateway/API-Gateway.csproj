@@ -20,4 +20,21 @@
 
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="API-Gateway\bin\Debug\net8.0\API-Gateway.Client.staticwebassets.runtime.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\bin\Debug\net8.0\API-Gateway.deps.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\bin\Debug\net8.0\API-Gateway.runtimeconfig.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\bin\Debug\net8.0\API-Gateway.staticwebassets.runtime.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\bin\Debug\net8.0\appsettings.Development.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\bin\Debug\net8.0\appsettings.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\bin\Debug\net8.0\BlazorDebugProxy\BrowserDebugHost.runtimeconfig.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\obj\API-Gateway.csproj.nuget.dgspec.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\obj\Debug\net8.0\API-Gateway.sourcelink.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\obj\Debug\net8.0\staticwebassets.build.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\obj\Debug\net8.0\staticwebassets.development.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\obj\Debug\net8.0\staticwebassets.pack.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\obj\project.assets.json" />
+      <_ContentIncludedByDefault Remove="API-Gateway\obj\project.packagespec.json" />
+    </ItemGroup>
+
 </Project>
