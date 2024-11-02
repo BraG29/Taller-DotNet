@@ -27,6 +27,7 @@ namespace Quality_Management.Controllers
         {
             try
             {
+                _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientLeavesTheQueue, procedure.OfficeId);
                 long id = await _procedureService.CreateProcedure(procedure);
                 return Ok(id);
             }
@@ -72,6 +73,20 @@ namespace Quality_Management.Controllers
 
         }
 
+        [HttpGet]
+        [Route("/client-registration/{officeId}")]
+        public async Task<ActionResult> ClientRegistration(string officeId)
+        {
+            try
+            {
+                _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientEnterTheQueue, officeId);
+                return Ok();
+            }
+            catch (ArgumentException e)
+            {
+                return NotFound(e.Message);
+            }
+        }
     }
 }
 

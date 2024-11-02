@@ -1,5 +1,6 @@
 using Quality_Management.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using Quality_Management.Hubs;
 using Quality_Management.Model;
 using Quality_Management.Infraestructure;
 using Quality_Management.Services;
@@ -21,6 +22,19 @@ builder.Services.AddSignalR();
 
 var connectionString = builder.Configuration.GetConnectionString("QMDatabase");
 
+var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: myAllowSpecificOrigins,
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                .SetIsOriginAllowed(_ => true)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 builder.Services.AddDbContext<QualityManagementDbContext>(options => options.UseSqlServer(connectionString));
 
 var app = builder.Build();
@@ -37,5 +51,9 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseCors(myAllowSpecificOrigins);
+
+app.MapHub<QualityManagementHub>("/quality-management/hub");
 
 app.Run();

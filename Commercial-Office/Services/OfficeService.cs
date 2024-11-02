@@ -246,6 +246,7 @@ namespace Commercial_Office.Services
 
             TimedQueueItem<string> user = new TimedQueueItem<string>(userId);
             office.UserQueue.Enqueue(user);
+            _qualityManagementService.CallClientRegistration(officeId);
         }
 
         public async Task CallNextUser(string officeId, long placeNumber)

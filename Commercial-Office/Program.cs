@@ -90,6 +90,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseCors(myAllowSpecificOrigins);
+
 app.MapHub<CommercialOfficeHub>("/commercial-office/hub");
 
 app.Run();

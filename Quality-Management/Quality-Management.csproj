@@ -28,4 +28,8 @@
       <Folder Include="Migrations\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Pages\signalR-test.cshtml" />
+    </ItemGroup>
+
 </Project>

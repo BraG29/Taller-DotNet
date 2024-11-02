@@ -19,4 +19,14 @@ public class OfficeRepository : IOfficeRepository
             await _context.Offices.ToListAsync() : 
             new List<Office>();
     }
+
+    public bool ExistsById(string officeId)
+    {
+        return _context.Offices.Any(office => office.OfficeId == officeId);
+    }
+
+    public Office FindById(string officeId)
+    {
+        return _context.Offices.Find(officeId);
+    }
 }

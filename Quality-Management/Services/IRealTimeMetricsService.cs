@@ -4,8 +4,9 @@ namespace Quality_Management.Services;
 
 public interface IRealTimeMetricsService
 {
-    public void ClientEnterTheQueue(string officeId);
-    public void ClientLeavesTheQueue(string officeId);
-    public int ClientsInQueue(string officeId);
-    public int FreePositions(string officeId);
+    public delegate int[] ChangeMetricStatus(string officeId);
+    public int[] ClientEnterTheQueue(string officeId);
+    public int[] ClientLeavesTheQueue(string officeId);
+    public int[] PositionReleased(string officeId);
+    public void SendMetric(IRealTimeMetricsService.ChangeMetricStatus operation, string officeId);
 }
