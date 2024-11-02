@@ -297,7 +297,7 @@ namespace Commercial_Office.Services
 
                     //TODO: Consultar
                     //desde Apigateway
-                    _hub.Clients.All.SendAsync("RefreshMonitor", userId.Item, place.Number, officeId);
+                    _hub.Clients.All.SendAsync("RefreshMonitor"+officeId, userId.Item, place.Number, officeId);
 
                 }
                 else
@@ -352,7 +352,7 @@ namespace Commercial_Office.Services
                     //TODO: Consultar
                     //desde Apigateway
 
-                    _hub.Clients.All.SendAsync("RefreshMonitor", "remove", place.Number, officeId); 
+                    _hub.Clients.All.SendAsync("RefreshMonitor"+ officeId, "remove", place.Number, officeId); 
 
                     await task;
                 }
