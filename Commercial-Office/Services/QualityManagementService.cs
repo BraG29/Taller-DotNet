@@ -17,11 +17,13 @@
             {
                 OfficeId = officeId,
                 PlaceNumber = placeNumber,
-                ProcessStartDate = processStartDate
+                ProcedureStart = processStartDate
             };
 
+            // Console.WriteLine(data.procedureStart);
+
             var response = await httpClient
-            .PostAsJsonAsync("management/startProcedure", data);
+            .PostAsJsonAsync("quality-management-api/startProcedure", data);
 
             return await response.Content.ReadAsStringAsync();
         }
@@ -29,20 +31,20 @@
         /// <summary>
         /// Se comunica con el servicio de Quality Management para finalizar un tramite
         /// </summary>
-        /// <param name="processId"> Identificador del tramite </param>
-        /// <param name="processFinishDate"> Fecha en la que se terminó el tramite </param>
-        public async Task FinishProcedure(string processId, DateTime processFinishDate)
+        /// <param name="procedureId"> Identificador del tramite </param>
+        /// <param name="procedureFinishDate"> Fecha en la que se terminó el tramite </param>
+        public async Task FinishProcedure(long procedureId, DateTime procedureFinishDate)
         {
-            var data = new
-            {
-                ProcessId = processId,
-                ProcessFinishDate = processFinishDate
-            };
-
-            var response = await httpClient
-                .PutAsJsonAsync("management/finishProcedure", data);
+            await httpClient.PutAsJsonAsync("quality-management-api/finishProcedure/"+procedureId , procedureFinishDate);
         }
 
-     
+        public async Task CallClientRegistration(string officeId)
+        {
+            var response = await httpClient.GetAsync($"quality-management-api/client-registration/{officeId}");
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.Write($"Ha habido un error al enviar metrica a QM: {response.Content.ReadAsStringAsync()}");
+            }
+        }
     }
 }

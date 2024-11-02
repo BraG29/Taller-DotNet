@@ -11,11 +11,11 @@ namespace Quality_Management.Model
         public long Id { get; init; }
         [Column("office")]
         [Required, StringLength(8)]
-        public string OfficeId { get; set; }
+        public string Office { get; set; }
         [Column("place_number")]
-        public long PlaceNumber { get; init; }
-        [Column("procedure_start")] 
-        public DateTime ProcedureStart { get; init; }
+        public long PlaceNumber { get; set; }
+        [Column("procedure_start")]
+        public DateTime ProcedureStart { get; set; }// = DateTime.Now;
         [Column("procedure_end")] 
         public DateTime? ProcedureEnd { get; set; }
 
@@ -24,10 +24,11 @@ namespace Quality_Management.Model
             
         }
         
-        public Procedure(long id, string officeId, long placeNumber, DateTime procedureStart)
+        public Procedure(long id, string office, long placeNumber, DateTime procedureStart)
         {
             Id = id;
-            OfficeId = officeId;
+            Office = office;
+            // Office = office;
             PlaceNumber = placeNumber;
             ProcedureStart = procedureStart;
         }

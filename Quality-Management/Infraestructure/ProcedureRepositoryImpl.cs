@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using Quality_Management.DataAccess;
 using Quality_Management.Model;
 
@@ -13,43 +14,36 @@ namespace Quality_Management.Infraestructure
             _context = context;
         }
 
-        public async Task<Procedure> Save(Procedure procedure)
+        public async Task<long> Save(Procedure procedure)
         {
-            _context.Procedures.Add(procedure);
-            await _context.SaveChangesAsync();
-            return procedure;
+             _context.Procedures.Add(procedure);
+            await _context.SaveChangesAsync();     
+            return procedure.Id;
 
         }
 
-        public void Delete(long id)
+        public async Task Delete(Procedure procedure)
         {
-            throw new NotImplementedException();
+            _context.Procedures.Remove(procedure);
+            await _context.SaveChangesAsync();
         }
         
-        public IList<Procedure> FindAll()
+        public async Task<IList<Procedure>> FindAll()
         {
             return _context.Procedures.ToList();
-            throw new NotImplementedException();
         }
 
-        public Procedure FindById(long id)
-        {
-            throw new NotImplementedException();
+        public async Task<Procedure> FindById(long id)
+        {   
+            return await _context.Procedures.FindAsync(id);
         }
 
-        public async Task<string> Update(Procedure procedure)
+        public async Task Update(Procedure procedure)
+
         {
             _context.Entry(procedure).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-                return "SI";
-            }
-            catch (Exception e)
-            {
-                return "NO";
-            }
+            await _context.SaveChangesAsync();
         }
     }
 }

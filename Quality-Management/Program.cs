@@ -1,5 +1,9 @@
 using Quality_Management.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using Quality_Management.Hubs;
+using Quality_Management.Model;
+using Quality_Management.Infraestructure;
+using Quality_Management.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,9 +14,26 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<IOfficeRepository, OfficeRepository>();
+builder.Services.AddScoped<IRealTimeMetricsService, RealTimeMetricsService>();
+builder.Services.AddScoped<IProcedureRepository, ProcedureRepositoryImpl>();
+builder.Services.AddScoped<IProcedureService, ProcedureServiceImpl>();
 builder.Services.AddSignalR();
 
 var connectionString = builder.Configuration.GetConnectionString("QMDatabase");
+
+var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: myAllowSpecificOrigins,
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                .SetIsOriginAllowed(_ => true)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
 
 builder.Services.AddDbContext<QualityManagementDbContext>(options => options.UseSqlServer(connectionString));
 
@@ -25,10 +46,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseCors(myAllowSpecificOrigins);
+
+app.MapHub<QualityManagementHub>("/quality-management/hub");
 
 app.Run();

@@ -52,7 +52,7 @@ namespace Commercial_Office.Services
                         }
 
                         ulong placeNumber = (ulong)place.Number;
-                        AttentionPlace attentionPlace = new AttentionPlace(placeNumber, false, "0");
+                        AttentionPlace attentionPlace = new AttentionPlace(placeNumber, false, 0);
                         attentionPlaces.Add(attentionPlace);
                     }
                 }
@@ -107,7 +107,7 @@ namespace Commercial_Office.Services
                     else
                     {
                         //si no existe agrego a la lista
-                        office.AttentionPlaceList.Add(new AttentionPlace((ulong)placeDTO.Number, placeDTO.Available, "0"));
+                        office.AttentionPlaceList.Add(new AttentionPlace((ulong)placeDTO.Number, placeDTO.Available, 0));
                     }
                 }
                 catch (InvalidOperationException)
@@ -246,6 +246,7 @@ namespace Commercial_Office.Services
 
             TimedQueueItem<string> user = new TimedQueueItem<string>(userId);
             office.UserQueue.Enqueue(user);
+            _qualityManagementService.CallClientRegistration(officeId);
         }
 
         public async Task CallNextUser(string officeId, long placeNumber)
@@ -284,16 +285,18 @@ namespace Commercial_Office.Services
                 {
                     place.IsAvailable = false; //ocupo el puesto
 
-
-                    //llamo endpoint que me devuelve id de tramite y seteo el atributo ProcessId del lugar
-                    string procedureId = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.UtcNow);
+                    string procedureId = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.Now);
 
                     if (procedureId == null)
                     {
                         throw new ArgumentNullException($"Identificadores de tramite vacio");
                     }
+                    
+                    long procedureIdCast = long.Parse(procedureId);
 
-                    place.ProcedureId = procedureId;
+                    place.ProcedureId = procedureIdCast;
+
+                    Console.WriteLine("Setenado el id del tramite: " + place.ProcedureId);
 
                     //TODO: Consultar
                     //desde Apigateway
@@ -346,15 +349,12 @@ namespace Commercial_Office.Services
 
                     place.IsAvailable = true; //libero el puesto
 
-                    //llamada a endpoint de qualityManagement para finalizar tramite
-                    var task = _qualityManagementService.FinishProcedure(place.ProcedureId, DateTime.UtcNow);
-
-                    //TODO: Consultar
-                    //desde Apigateway
+                    var task = _qualityManagementService.FinishProcedure(place.ProcedureId, DateTime.Now);
+                    await task;
 
                     _hub.Clients.All.SendAsync("RefreshMonitor"+ officeId, "remove", place.Number, officeId); 
 
-                    await task;
+                   
                 }
                 else //Si el puesto ya se encuentra libre
                 {
@@ -367,9 +367,6 @@ namespace Commercial_Office.Services
             }
 
         }
-
-
-
 
         //FUNCIONES DE METRICAS
         //Obtener cant usuarios en espera
