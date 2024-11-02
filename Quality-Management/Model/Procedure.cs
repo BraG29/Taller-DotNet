@@ -1,26 +1,36 @@
-﻿namespace Quality_Management.Model
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Quality_Management.Model
 {
     public class Procedure
     {
 
-        public string ProcedureId { get; set; }
-
+        [Required]
+        [Key]
+        public long Id { get; init; }
+        [Column("office")]
+        [Required, StringLength(8)]
         public string OfficeId { get; set; }
+        [Column("place_number")]
+        public long PlaceNumber { get; init; }
+        [Column("procedure_start")] 
+        public DateTime ProcedureStart { get; init; }
+        [Column("procedure_end")] 
+        public DateTime? ProcedureEnd { get; set; }
 
-        public long PlaceNumber { get; set; }
-
-        public DateTime ProcedureStart { get; set; }
-
-        public DateTime ProcedureEnd { get; set; }
-
-
-        public Procedure(string procedureId, string officeId, long placeNumber, DateTime procedureStart, DateTime procedureEnd)
+        public Procedure()
         {
-            ProcedureId = procedureId;
+            
+        }
+        
+        public Procedure(long id, string officeId, long placeNumber, DateTime procedureStart)
+        {
+            Id = id;
             OfficeId = officeId;
             PlaceNumber = placeNumber;
             ProcedureStart = procedureStart;
-            ProcedureEnd = procedureEnd;
         }
+        
     }
 }

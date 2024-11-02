@@ -1,0 +1,125 @@
+﻿@page "/clientMonitor/{office}"
+@using Microsoft.AspNetCore.SignalR.Client;
+
+
+
+<h3>Monitor de @office</h3>
+
+<RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+
+    <RadzenColumn >
+
+            <RadzenRow JustifyContent="JustifyContent.Left" AlignItems="AlignItems.Center">
+        <RadzenColumn>
+            <RadzenText TextStyle="TextStyle.H4">Cedula</RadzenText>
+        </RadzenColumn>
+
+        <RadzenColumn>
+            <RadzenText TextStyle="TextStyle.H4">Puesto de Atención</RadzenText>
+        </RadzenColumn>
+        </RadzenRow>
+
+    </RadzenColumn>
+</RadzenRow>
+        <RadzenDataList Data="@data" TItem="Client" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
+            <Template Context="client">
+
+                
+
+                <RadzenCard Variant="Variant.Filled" class="rz-p-0" Style="width: 100%; overflow: hidden;">
+                    <RadzenRow Gap="0">
+                        <RadzenColumn Size="12" SizeLG="6" class="rz-p-4">
+                            <RadzenText TextStyle="TextStyle.H3" >@(client.clientCi)</RadzenText>
+                        </RadzenColumn>
+
+                        <RadzenColumn Size="10" SizeLG="5" class="rz-p-4">
+                            <RadzenRow Gap="0">
+                                <RadzenColumn Size="10" SizeMD="4" SizeLG="2">
+                                    <RadzenText TextStyle="TextStyle.H3" TextAlign="TextAlign.Center">@(client.attentionPlace)</RadzenText>
+                                </RadzenColumn>
+
+                            </RadzenRow>
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenCard>
+            </Template>
+        </RadzenDataList>
+
+
+
+
+
+<style>
+.product-title {
+    min-height: 72px;
+    background-color: var(--rz-secondary-lighter);
+}
+.price-badge {
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 20px;
+    padding: 8px;
+}
+</style>
+
+
+@code {
+
+    //creamos el hub con el que nos conectaremos
+    HubConnection _connection;
+
+    //creamos el modelo de datos que vamos a usar
+    public class Client{
+        public string clientCi { get; set; }
+        public long attentionPlace { get; set; }
+        public string officeId { get; set; }
+    }
+
+    //el ID de al oficina que nos llega por la URI
+    [Parameter]
+    public string office { get; set; }
+
+    static IDictionary<long,Client> clients = new Dictionary<long,Client>();
+
+    //ICollection<<IDictionary<long, Client>> clientEnumerable = new List<IDictionary<long, Client>> { clients };
+    //IEnumerable<IDictionary<long, Client>> clientEnumerable = new Dictionary<long,object>();
+
+    ICollection<Client> data = clients.Values;
+    //IQueryable<Client> clientQueryable;
+    //ICollection<Client> data = clientEnumerable.First().Values;
+
+    protected override async Task OnInitializedAsync(){
+        
+        Console.WriteLine("Se inicializó el componente del monitor en API Gateway");
+
+        //TODO: update this hub with the thingy service discovery from Aspire
+        _connection = new HubConnectionBuilder().WithUrl("http://localhost:5030/commercial-office/hub").Build();
+
+        _connection.On("RefreshMonitor"+office, (string userId, long post, string officeId) =>
+        {
+            Console.WriteLine($"Datos recibidos mediante SignalR: {userId}, {post}, {officeId}");
+
+            Client model = new Client();
+
+            model.clientCi = userId;
+            model.attentionPlace = post;
+            model.officeId = officeId;
+
+            if (clients.ContainsKey(post)){//si se encuentra el puesto ya ocupado
+
+                clients.Remove(model.attentionPlace);//lo liberamos
+            }
+
+            if (!model.clientCi.Equals("remove"))//si el llamado no es solo para remover, también añadimos al usuario al puesto
+            {
+                clients.Add(model.attentionPlace, model);
+            }
+
+            data = clients.Values;
+            //Le avisamos al componente que se re-renderize dado que su estádo ha cambiado
+            InvokeAsync(StateHasChanged);
+        });
+
+        await _connection.StartAsync();
+    }
+}

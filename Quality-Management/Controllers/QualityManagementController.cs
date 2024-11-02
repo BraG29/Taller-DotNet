@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Quality_Management.DataAccess;
 using Quality_Management.Model;
 
 namespace Quality_Management.Controllers
@@ -8,7 +9,6 @@ namespace Quality_Management.Controllers
     [Route("quality-management")]
     public class QualityManagementController : Controller
     {
-
         private readonly IProcedureRepository _procedureRepository;
 
         public QualityManagementController(IProcedureRepository procedureRepository)
@@ -45,7 +45,7 @@ namespace Quality_Management.Controllers
         {
             try
             {
-                _procedureRepository.Add(procedure);
+                _procedureRepository.Save(procedure);
                 return Ok("Tramite creado con exito.");
             }
             catch (Exception ex)
