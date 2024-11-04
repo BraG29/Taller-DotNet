@@ -2,10 +2,15 @@ using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var qualityManagement = builder
-    .AddProject<Projects.Quality_Management>("quality-management");
+var qmCache = builder.AddRedis("quality-management-cache", 6379)
+    .WithRedisCommander(containerName: "quality-management-cache-UI");
 
-var commercialOffice = builder.AddProject<Commercial_Office>("commercial-office").WithReference(qualityManagement);
+var qualityManagement = builder
+    .AddProject<Projects.Quality_Management>("quality-management")
+    .WithReference(qmCache);
+
+var commercialOffice = builder.AddProject<Commercial_Office>("commercial-office")
+    .WithReference(qualityManagement);
 
 var apiGateway = builder.AddProject<Projects.API_Gateway>("api-gateway")
     .WithReference(commercialOffice)

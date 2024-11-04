@@ -7,38 +7,39 @@ namespace Quality_Management.Services;
 
 public class RealTimeMetricsService : IRealTimeMetricsService
 {
-    private readonly IDictionary<String, Office> _offices;
+    private readonly IRedisServer _redisServer;
     private readonly IOfficeRepository _officeRepository;
     private readonly IHubContext<QualityManagementHub> _hub;
 
-    public RealTimeMetricsService(IOfficeRepository officeRepository, IHubContext<QualityManagementHub> hub)
+    public RealTimeMetricsService(IOfficeRepository officeRepository, IRedisServer redisServer, IHubContext<QualityManagementHub> hub)
     {
         _officeRepository = officeRepository;
+        _redisServer = redisServer;
         _hub = hub;
-        _offices = _officeRepository.FindAll().Result
-            .Select(office => new Office
-            {
-                OfficeId = office.OfficeId, 
-                PositionsAmount = office.PositionsAmount, 
-                FreePositions = office.PositionsAmount
-                
-            })
-            .ToDictionary(office => office.OfficeId);
     }
     
     public int[] ClientEnterTheQueue(string officeId)
-    { 
-        return [++ _offices[officeId].ClientsInQueue];
+    {
+        var office = _redisServer.GetValueAsync(officeId).Result;
+        int[] metrics = [++office.ClientsInQueue];
+        _redisServer.SetValueAsync(office.OfficeId, office);
+        return metrics;
     }
 
     public int[] ClientLeavesTheQueue(string officeId)
     {
-        return [-- _offices[officeId].ClientsInQueue, -- _offices[officeId].FreePositions];
+        var office = _redisServer.GetValueAsync(officeId).Result;
+        int[] metrics = [ --office.ClientsInQueue, --office.FreePositions ];
+        _redisServer.SetValueAsync(office.OfficeId, office);
+        return metrics;
     }
 
     public int[] PositionReleased(string officeId)
     {
-        return [++ _offices[officeId].FreePositions];
+        var office = _redisServer.GetValueAsync(officeId).Result;
+        int[] metrics = [++office.FreePositions];
+        _redisServer.SetValueAsync(office.OfficeId, office);
+        return metrics;
     }
 
     public async void SendMetric(IRealTimeMetricsService.ChangeMetricStatus operation, string officeId)
@@ -51,13 +52,13 @@ public class RealTimeMetricsService : IRealTimeMetricsService
 
     private bool ExistsOffice(string officeId)
     {
-        if (_offices.ContainsKey(officeId)) return true;
+        if (_redisServer.GetValueAsync(officeId).Result != null) return true;
         
         Office? office = _officeRepository.FindById(officeId);
 
         if (office != null)
         {
-            _offices.Add(officeId, new Office
+            _redisServer.SetValueAsync(officeId, new Office
             {
                 OfficeId = office.OfficeId,
                 PositionsAmount = office.PositionsAmount,
@@ -65,7 +66,6 @@ public class RealTimeMetricsService : IRealTimeMetricsService
             });
 
             return true;
-
         }
         
         return false;

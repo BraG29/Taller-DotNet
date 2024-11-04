@@ -74,7 +74,7 @@ namespace Quality_Management.Controllers
         }
 
         [HttpGet]
-        [Route("/client-registration/{officeId}")]
+        [Route("client-registration/{officeId}")]
         public async Task<ActionResult> ClientRegistration(string officeId)
         {
             try
@@ -84,6 +84,7 @@ namespace Quality_Management.Controllers
             }
             catch (ArgumentException e)
             {
+                Console.WriteLine($"Error al enviar metrica: {e.Message}");
                 return NotFound(e.Message);
             }
         }
