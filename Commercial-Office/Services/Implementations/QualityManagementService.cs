@@ -55,6 +55,14 @@ namespace Commercial_Office.Services.Implementations
 
         }
 
+        public async Task CallClientRegistration(string officeId)
+        {
+            var response = await httpClient.GetAsync($"quality-management-api/client-registration/{officeId}");
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.Write($"Ha habido un error al enviar metrica a QM: {response.Content.ReadAsStringAsync()}");
+            }
+        }
 
     }
 }

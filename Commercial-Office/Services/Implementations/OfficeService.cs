@@ -62,11 +62,6 @@ namespace Commercial_Office.Services.Implementations
                 }
 
                 Office newOffice = new Office(officeDTO.Identificator, attentionPlaces);
-                var queue = _queueService.GetQueueOrCreateQueue(officeDTO.Identificator); //Creo una queue que se guarda en memoria.
-                //si ya existe solo la devuelvo, se supone que  aca no existe nunca.
-
-                //TODO discutir el funcionamiento de esto ya que no tiene sentido crear la queue al crear la officina, capaz se crea la queue
-                //Al momento de querer manipularla al ingresar usuarios
 
                 try
                 {
@@ -257,6 +252,8 @@ namespace Commercial_Office.Services.Implementations
             var queue = _queueService.GetQueueOrCreateQueue(officeId);
 
             queue.Enqueue(new TimedQueueItem<string>(userId));
+
+            _qualityManagementService.CallClientRegistration(officeId);
         }
 
         public async Task CallNextUser(string officeId, long placeNumber)

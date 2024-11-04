@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Quality_Management.DataAccess;
 
@@ -11,9 +12,11 @@ using Quality_Management.DataAccess;
 namespace Quality_Management.Migrations
 {
     [DbContext(typeof(QualityManagementDbContext))]
-    partial class QualityManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241101150147_Create Office table")]
+    partial class CreateOfficetable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,7 +56,7 @@ namespace Quality_Management.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("place_number");
 
-                    b.Property<DateTime>("ProcedureEnd")
+                    b.Property<DateTime?>("ProcedureEnd")
                         .HasColumnType("datetime2")
                         .HasColumnName("procedure_end");
 

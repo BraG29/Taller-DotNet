@@ -15,18 +15,21 @@ namespace Quality_Management.Controllers
     public class QualityManagementController : Controller
     {
         private readonly IProcedureService _procedureService;
-        
-        public QualityManagementController(IProcedureService procedureService)
+        private readonly IRealTimeMetricsService _realTimeMetricsService;
+
+        public QualityManagementController(IProcedureService procedureService, IRealTimeMetricsService realTimeMetricsService)
         {
             _procedureService = procedureService;
+            _realTimeMetricsService = realTimeMetricsService;
         }
-
+        
         [HttpPost]
         [Route("startProcedure")]
         public async Task<ActionResult<long>> CreateProcedure(ProcedureDTO procedure)
         {
             try
             {
+                _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientLeavesTheQueue, procedure.OfficeId);
                 long id = await _procedureService.CreateProcedure(procedure);
                 return Ok(id);
             }
@@ -44,8 +47,6 @@ namespace Quality_Management.Controllers
             }
 
         }
-
-
 
 
         [HttpPut]
@@ -95,7 +96,21 @@ namespace Quality_Management.Controllers
             }
         }
 
-
+        [HttpGet]
+        [Route("client-registration/{officeId}")]
+        public async Task<ActionResult> ClientRegistration(string officeId)
+        {
+            try
+            {
+                _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientEnterTheQueue, officeId);
+                return Ok();
+            }
+            catch (ArgumentException e)
+            {
+                Console.WriteLine($"Error al enviar metrica: {e.Message}");
+                return NotFound(e.Message);
+            }
+        }
     }
 }
 
