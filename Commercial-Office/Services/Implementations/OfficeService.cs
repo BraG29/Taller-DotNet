@@ -316,7 +316,10 @@ namespace Commercial_Office.Services.Implementations
 
                     //Como pasarle id del tramite a liberar puesto
 
-                    _hub.Clients.All.SendAsync("RefreshMonitor", userId.Item, place.Number, officeId);
+
+                    //TODO: Consultar
+                    //desde Apigateway
+                    _hub.Clients.All.SendAsync("RefreshMonitor"+officeId, userId.Item, place.Number, officeId);
 
                 }
                 else
@@ -369,7 +372,7 @@ namespace Commercial_Office.Services.Implementations
                     
                     await _officeRepository.Update(office);
 
-                    _hub.Clients.All.SendAsync("RefreshMonitor", "remove", place.Number, officeId);
+                    _hub.Clients.All.SendAsync("RefreshMonitor"+ officeId, "remove", place.Number, officeId); 
 
                 }
                 else //Si el puesto ya se encuentra libre
