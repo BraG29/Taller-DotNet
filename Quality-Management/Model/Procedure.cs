@@ -17,7 +17,7 @@ namespace Quality_Management.Model
         [Column("procedure_start")]
         public DateTime ProcedureStart { get; set; }// = DateTime.Now;
         [Column("procedure_end")] 
-        public DateTime? ProcedureEnd { get; set; }
+        public DateTime ProcedureEnd { get; set; }
 
         public Procedure()
         {

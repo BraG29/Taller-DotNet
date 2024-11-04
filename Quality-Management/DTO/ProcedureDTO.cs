@@ -14,11 +14,11 @@ namespace Quality_Management.DTO
 
         public DateTime ProcedureStart { get; set; }
 
-        public DateTime? ProcedureEnd { get; set; }
+        public DateTime ProcedureEnd { get; set; }
 
         public ProcedureDTO() { }
 
-        public ProcedureDTO(long id, string officeId, long placeNumber, DateTime procedureStart, DateTime? procedureEnd)
+        public ProcedureDTO(long id, string officeId, long placeNumber, DateTime procedureStart, DateTime procedureEnd)
         {
             Id = id;
             OfficeId = officeId;
