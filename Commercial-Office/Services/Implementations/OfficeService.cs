@@ -294,25 +294,18 @@ namespace Commercial_Office.Services.Implementations
 
                     DateTime waitTime = userId.EnqueuedTime; //pasar tiempo de espera
                     
-                    await _officeRepository.Update(office);
+                    string procedureIdString = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.Now);
 
-                    await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.Now);
-                    //saco responsabilidad del id
-
-                    /*
-                    string procedureId = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.Now);
-
-                    if (procedureId == null)
+                    if (procedureIdString == null)
                     {
                         throw new ArgumentNullException($"Identificadores de tramite vacio");
                     }
 
-                    long procedureIdLong = long.Parse(procedureId);
+                    long procedureId = long.Parse(procedureIdString);
 
-                    Console.WriteLine("Id: " + procedureIdLong);*/
+                    place.ProcedureId = procedureId;
 
-                    //Como pasarle id del tramite a liberar puesto
-
+                    await _officeRepository.Update(office);
 
                     //TODO: Consultar
                     //desde Apigateway
@@ -365,7 +358,9 @@ namespace Commercial_Office.Services.Implementations
 
                     //le paso solo fecha el id lo maneja el servicio al que llamo
                     Console.WriteLine("Antes de  tirarle al servicio");
-                    await _qualityManagementService.FinishProcedure(DateTime.Now);
+                    await _qualityManagementService.FinishProcedure(place.ProcedureId, DateTime.Now);
+
+                    place.ProcedureId = 0;
                     
                     await _officeRepository.Update(office);
 
@@ -377,10 +372,9 @@ namespace Commercial_Office.Services.Implementations
                     throw new ArgumentException($"El puesto ya se encuentra liberado");
                 }
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException ex)
             {
-                throw;
-                throw new InvalidOperationException($"No existe el puesto");
+               throw new InvalidOperationException($"No existe el puesto" + ex.ToString());
             }
 
         }

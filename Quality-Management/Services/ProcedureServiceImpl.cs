@@ -102,7 +102,7 @@ namespace Quality_Management.Services
             }
 
             //id ,  office, place, start, end.
-            ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.OfficeId,
+            ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.Office,
                 procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd);
 
             return procedureDTO;

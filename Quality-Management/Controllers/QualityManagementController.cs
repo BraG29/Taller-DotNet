@@ -29,8 +29,8 @@ namespace Quality_Management.Controllers
         {
             try
             {
-                _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientLeavesTheQueue, procedure.OfficeId);
                 long id = await _procedureService.CreateProcedure(procedure);
+                _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientLeavesTheQueue, procedure.OfficeId);
                 return Ok(id);
             }
             catch(ArgumentNullException ex)

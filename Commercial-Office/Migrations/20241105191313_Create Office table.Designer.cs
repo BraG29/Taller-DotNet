@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Commercial_Office.Migrations
 {
     [DbContext(typeof(CommercialOfficeDbContext))]
-    [Migration("20241103233320_Create Office table")]
+    [Migration("20241105191313_Create Office table")]
     partial class CreateOfficetable
     {
         /// <inheritdoc />
