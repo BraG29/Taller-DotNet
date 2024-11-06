@@ -53,7 +53,7 @@ namespace Quality_Management.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("place_number");
 
-                    b.Property<DateTime?>("ProcedureEnd")
+                    b.Property<DateTime>("ProcedureEnd")
                         .HasColumnType("datetime2")
                         .HasColumnName("procedure_end");
 

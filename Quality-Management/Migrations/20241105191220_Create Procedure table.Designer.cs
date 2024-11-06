@@ -12,8 +12,8 @@ using Quality_Management.DataAccess;
 namespace Quality_Management.Migrations
 {
     [DbContext(typeof(QualityManagementDbContext))]
-    [Migration("20241101150147_Create Office table")]
-    partial class CreateOfficetable
+    [Migration("20241105191220_Create Procedure table")]
+    partial class CreateProceduretable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -56,7 +56,7 @@ namespace Quality_Management.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("place_number");
 
-                    b.Property<DateTime?>("ProcedureEnd")
+                    b.Property<DateTime>("ProcedureEnd")
                         .HasColumnType("datetime2")
                         .HasColumnName("procedure_end");
 

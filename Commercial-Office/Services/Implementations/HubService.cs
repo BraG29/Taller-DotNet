@@ -1,9 +1,9 @@
 ﻿using Commercial_Office.Model;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
-namespace Commercial_Office.Services
+namespace Commercial_Office.Services.Implementations
 {
-    public class HubService 
+    public class HubService
     {
         /*
          * Esto deberia comunicarse con apiGateway en lugar de clientMonitor
