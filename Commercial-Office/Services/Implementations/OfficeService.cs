@@ -253,7 +253,7 @@ namespace Commercial_Office.Services.Implementations
 
             queue.Enqueue(new TimedQueueItem<string>(userId));
 
-            _qualityManagementService.CallClientRegistration(officeId);
+            //_qualityManagementService.CallClientRegistration(officeId);
         }
 
         public async Task CallNextUser(string officeId, long placeNumber)
@@ -289,12 +289,20 @@ namespace Commercial_Office.Services.Implementations
                 //Si hay usuarios en la queue saco uno para ocupar el puesto desde el que lo llaman
                 if (queue.TryDequeue(out TimedQueueItem<string>? userId))
                 {
+                    DateTime dequeuedTime = DateTime.Now;
+                    DateTime enqueuedTime = userId.EnqueuedTime; //pasar tiempo de espera
 
                     place.IsAvailable = false; //ocupo el puesto
 
-                    DateTime waitTime = userId.EnqueuedTime; //pasar tiempo de espera
-                    
-                    string procedureIdString = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.Now);
+                    TimeSpan waitTime = dequeuedTime - enqueuedTime;
+
+                    Console.WriteLine("Tiempo de espera: " + waitTime.ToString());
+
+                    string timeDifferenceString = waitTime.ToString(@"hh\:mm\:ss");
+
+                    Console.WriteLine("Tiempo de espera en string: " + timeDifferenceString);
+
+                    string procedureIdString = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.Now, timeDifferenceString);
 
                     if (procedureIdString == null)
                     {

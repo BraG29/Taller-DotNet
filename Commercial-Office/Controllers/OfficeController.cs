@@ -243,7 +243,7 @@ namespace Commercial_Office.Controllers
         /// Registrar usuario, ingresa un usuario a la cola de la oficina.
         /// </summary>
         /// <param name="userId"> Identificador del usuario</param>
-        /// <param name="officeId"> Numero de la oficina a registrar el usuario</param>
+        /// <param name="officeId"> Identificador de la oficina a registrar el usuario</param>
         /// <response code="200"> Retorna un mensaje si registro el usuario</response>
         /// <response code="404"> Si no se pudo encontrar la oficina</response>
         /// <response code="500"> Si ocurrio un error interno</response>
@@ -278,7 +278,7 @@ namespace Commercial_Office.Controllers
         /// <summary>
         /// Llamar al siguiente usuario en la cola de una oficina y asignarlo a un puesto
         /// </summary>
-        /// <param name="officeId"> Numero de la oficina donde se encuentra el puesto</param>
+        /// <param name="officeId"> Identificador de la oficina donde se encuentra el puesto</param>
         /// <param name="placeNumber"> Numero de puesto desde el que se llama, el mismo no puede ser menor a 0</param>
         /// <response code="200"> Retorna un mensaje si asigno el usuario de la cola al puesto</response>
         /// <response code="404"> Si no se pudo encontrar la oficina</response>
@@ -325,7 +325,7 @@ namespace Commercial_Office.Controllers
         /// <summary>
         /// Liberar puesto, desocupa un puesto, el mismo queda libre esperando el llamado de otro usuario.
         /// </summary>
-        /// <param name="officeId"> Numero de la oficina donde se encuentra el puesto</param>
+        /// <param name="officeId"> Identificador de la oficina donde se encuentra el puesto</param>
         /// <param name="placeNumber"> Numero de puesto, el mismo no puede ser menor a 0</param>
         /// <response code="200"> Retorna un mensaje si libero el puesto</response>
         /// <response code="404"> Si no se pudo encontrar la oficina</response>
