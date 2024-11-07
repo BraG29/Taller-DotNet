@@ -15,7 +15,8 @@ namespace Quality_Management.Controllers
         private readonly IProcedureService _procedureService;
         private readonly IRealTimeMetricsService _realTimeMetricsService;
 
-        public QualityManagementController(IProcedureService procedureService, IRealTimeMetricsService realTimeMetricsService)
+        public QualityManagementController(IProcedureService procedureService, 
+            IRealTimeMetricsService realTimeMetricsService)
         {
             _procedureService = procedureService;
             _realTimeMetricsService = realTimeMetricsService;
@@ -27,17 +28,23 @@ namespace Quality_Management.Controllers
         {
             try
             {
-                _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientLeavesTheQueue, procedure.OfficeId);
+                await _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientLeavesTheQueue, 
+                    procedure.OfficeId);
                 long id = await _procedureService.CreateProcedure(procedure);
                 return Ok(id);
             }
-            catch(ArgumentNullException ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest("Fallo al crear tramite: " + ex);
             }
-            catch(DbUpdateException ex)
+            catch (DbUpdateException ex)
             {
                 return Conflict("Fallo al crear el tramite: " + ex);
+            }
+            catch (ArgumentException e)
+            {
+                Console.WriteLine($"Error al enviar metrica: {e.Message}");
+                return NotFound(e.Message);
             }
             catch (Exception ex)
             {
@@ -52,6 +59,7 @@ namespace Quality_Management.Controllers
         {
             try
             {
+                //TODO: Se necesita la id de la oficina para enviar metricas en tiempo REAL
                 await _procedureService.EndProcedure(Id, ProcedureEnd);
                 return Ok("Tramite finalizado con exito. ");
             }
@@ -70,7 +78,6 @@ namespace Quality_Management.Controllers
             {
                 return StatusCode(500, "Ocurrió un error inesperado: " + ex.Message);
             }
-
         }
 
         [HttpGet]
@@ -79,7 +86,7 @@ namespace Quality_Management.Controllers
         {
             try
             {
-                _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientEnterTheQueue, officeId);
+                await _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientEnterTheQueue, officeId);
                 return Ok();
             }
             catch (ArgumentException e)
