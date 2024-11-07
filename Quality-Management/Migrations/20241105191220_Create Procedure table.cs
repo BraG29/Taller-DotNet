@@ -12,6 +12,18 @@ namespace Quality_Management.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Offices",
+                columns: table => new
+                {
+                    OfficeId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PositionsAmount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Offices", x => x.OfficeId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Procedures",
                 columns: table => new
                 {
@@ -20,7 +32,7 @@ namespace Quality_Management.Migrations
                     office = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     place_number = table.Column<long>(type: "bigint", nullable: false),
                     procedure_start = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    procedure_end = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    procedure_end = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,6 +43,9 @@ namespace Quality_Management.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Offices");
+
             migrationBuilder.DropTable(
                 name: "Procedures");
         }

@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Quality_Management.DataAccess;
 using Quality_Management.DTO;
 using Quality_Management.Model;
 using Quality_Management.Services;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Quality_Management.Controllers
 {
@@ -53,6 +55,7 @@ namespace Quality_Management.Controllers
 
         }
 
+
         [HttpPut]
         [Route("finishProcedure/{Id}")]
         public async Task<ActionResult> FinishProcedure(long Id, [FromBody] DateTime ProcedureEnd)
@@ -73,6 +76,26 @@ namespace Quality_Management.Controllers
             catch (DbUpdateException ex)
             {
                 return Conflict("Fallo al finalizar: " + ex);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocurrió un error inesperado: " + ex.Message);
+            }
+        }
+
+
+        [HttpGet]
+        [Route("getProcedure/{ProcedureId}")]
+        public async Task<ActionResult<ProcedureDTO>> getProcedure(long ProcedureId)
+        {
+            try
+            {
+                var procedure = await _procedureService.GetProcedure(ProcedureId);
+                return Ok(procedure);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al obtener: " + ex);
             }
             catch (Exception ex)
             {

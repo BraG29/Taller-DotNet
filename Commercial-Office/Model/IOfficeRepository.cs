@@ -1,13 +1,15 @@
-﻿namespace Commercial_Office.Model
+﻿using System.Collections.Concurrent;
+
+namespace Commercial_Office.Model
 {
     public interface IOfficeRepository
     {
 
-        public void Add(Office office);
-        public void Update(Office office);
-        public void Delete(string id);
-        public Office GetOffice(string id);
-        public IList<Office> GetAll();
+        public Task Add(Office office);
+        public Task Update(Office office);
+        public Task Delete(Office office);
+        public Task<Office> GetOffice(string id);
+        public Task<IList<Office>> GetAll();
 
     }
 }

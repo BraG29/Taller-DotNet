@@ -42,7 +42,6 @@ namespace Quality_Management.Infraestructure
 
         {
             _context.Entry(procedure).State = EntityState.Modified;
-
             await _context.SaveChangesAsync();
         }
     }

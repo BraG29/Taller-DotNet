@@ -34,6 +34,13 @@ namespace Quality_Management.Services
         /// <returns> Devuelve el promedio de tiempo </returns>
         public Task<Double> ProceduresAverageTime(string officeId);
 
+
+        /// <summary>
+        /// Funcion para obtener un procedimiento utilizando su identificador.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns> Un procedimiento especifico de tipo ProcedureDTO</returns>
+        public Task<ProcedureDTO> GetProcedure(long procedurId);
     }
 
 }

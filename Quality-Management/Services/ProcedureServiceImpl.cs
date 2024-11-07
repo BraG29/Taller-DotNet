@@ -46,6 +46,11 @@ namespace Quality_Management.Services
             try
             {
 
+                if (procedureId <= 0)
+                {
+                    throw new ArgumentException("El ID del procedimiento debe ser mayor que cero.");
+                }
+
                 var procedure = await _procedureRepository.FindById(procedureId);
 
                 if (procedure == null)
@@ -54,18 +59,22 @@ namespace Quality_Management.Services
                 }
 
                 procedure.ProcedureEnd = procedureFinishTime;
-
-                Console.WriteLine("Estoy actualizando la fecha" + procedure.ProcedureEnd);
-
                 await _procedureRepository.Update(procedure);
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                throw new DbUpdateConcurrencyException(ex.ToString());
+                Console.WriteLine("DbUpdateConcurrencyException: " + ex.ToString());
+                throw; 
             }
             catch (DbUpdateException ex)
             {
-                throw new DbUpdateException(ex.ToString());
+                Console.WriteLine("DbUpdateException: " + ex.ToString());
+                throw;
+            }
+            catch (Exception ex) 
+            { 
+                Console.WriteLine("Error inesperado: " + ex.ToString());
+                throw;
             }
         }
 
@@ -79,6 +88,24 @@ namespace Quality_Management.Services
         public Task<double> ProceduresAverageTime(string officeId)
         {
             throw new NotImplementedException();
+        }
+
+
+        public async Task<ProcedureDTO> GetProcedure(long procedureId)
+        {
+
+            var procedure = await _procedureRepository.FindById(procedureId);
+
+            if (procedure == null)
+            {
+                throw new ArgumentNullException($"El tramite no existe");
+            }
+
+            //id ,  office, place, start, end.
+            ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.Office,
+                procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd);
+
+            return procedureDTO;
         }
 
     }
