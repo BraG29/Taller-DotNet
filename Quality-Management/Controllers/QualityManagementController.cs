@@ -16,12 +16,14 @@ namespace Quality_Management.Controllers
     {
         private readonly IProcedureService _procedureService;
         private readonly IRealTimeMetricsService _realTimeMetricsService;
+        private readonly IOfficeRepository _officeRepository;
 
         public QualityManagementController(IProcedureService procedureService, 
-            IRealTimeMetricsService realTimeMetricsService)
+            IRealTimeMetricsService realTimeMetricsService, IOfficeRepository officeRepository)
         {
             _procedureService = procedureService;
             _realTimeMetricsService = realTimeMetricsService;
+            _officeRepository = officeRepository;
         }
         
         [HttpPost]
@@ -45,7 +47,6 @@ namespace Quality_Management.Controllers
             }
             catch (ArgumentException e)
             {
-                Console.WriteLine($"Error al enviar metrica: {e.Message}");
                 return NotFound(e.Message);
             }
             catch (Exception ex)
@@ -62,12 +63,20 @@ namespace Quality_Management.Controllers
         {
             try
             {
-                //TODO: Se necesita la id de la oficina para enviar metricas en tiempo REAL
                 await _procedureService.EndProcedure(Id, ProcedureEnd);
+                
+                await _realTimeMetricsService.SendMetric(_realTimeMetricsService.PositionReleased,
+                    _officeRepository.FindByProcedure(Id).OfficeId);
+                
                 return Ok("Tramite finalizado con exito. ");
             }
-            catch (ArgumentNullException ex) {
+            catch (ArgumentNullException ex)
+            {
                 return BadRequest("Fallo al finalizar: " + ex);
+            }
+            catch (ArgumentException e)
+            {
+                return NotFound(e.Message);
             }
             catch (DbUpdateConcurrencyException ex)
             {

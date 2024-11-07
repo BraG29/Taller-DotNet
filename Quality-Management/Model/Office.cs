@@ -13,6 +13,7 @@ public class Office
     public int ClientsInQueue { get; set; } = 0;
     [NotMapped] 
     public int FreePositions { get; set; } = 0;
+    public IList<Procedure>? Procedures { get; set; }
     
     // public Office(string officeId, int positionsAmount)
     // {

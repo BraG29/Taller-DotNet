@@ -9,9 +9,10 @@ namespace Quality_Management.Model
         [Required]
         [Key]
         public long Id { get; init; }
-        [Column("office")]
-        [Required, StringLength(8)]
-        public string Office { get; set; }
+        // [Column("office")]
+        [Required]
+        [ForeignKey("office")]
+        public Office Office { get; set; }
         [Column("place_number")]
         public long PlaceNumber { get; set; }
         [Column("procedure_start")]
@@ -24,7 +25,7 @@ namespace Quality_Management.Model
             
         }
         
-        public Procedure(long id, string office, long placeNumber, DateTime procedureStart)
+        public Procedure(long id, Office office, long placeNumber, DateTime procedureStart)
         {
             Id = id;
             Office = office;

@@ -9,10 +9,12 @@ namespace Quality_Management.Services
     public class ProcedureServiceImpl : IProcedureService
     {
         private readonly IProcedureRepository _procedureRepository;
+        private readonly IOfficeRepository _officeRepository;
 
-        public ProcedureServiceImpl(IProcedureRepository procedureRepository)
+        public ProcedureServiceImpl(IProcedureRepository procedureRepository, IOfficeRepository officeRepository)
         {
             _procedureRepository = procedureRepository;
+            _officeRepository = officeRepository;
         }
 
         public async Task<long> CreateProcedure(ProcedureDTO procedureDTO)
@@ -27,9 +29,15 @@ namespace Quality_Management.Services
             {
                 throw new ArgumentNullException($"Identificador de oficina vacio");
             }
+
+            if (!_officeRepository.ExistsById(procedureDTO.OfficeId))
+            {
+                throw new ArgumentException($"No existe la oficina {procedureDTO.OfficeId}");
+            }
+            
             try
             {
-                Procedure procedure = new Procedure(0, procedureDTO.OfficeId, procedureDTO.PlaceNumber, procedureDTO.ProcedureStart);
+                Procedure procedure = new Procedure(0, _officeRepository.FindById(procedureDTO.OfficeId), procedureDTO.PlaceNumber, procedureDTO.ProcedureStart);
 
                 //devolver id generado
                 return await _procedureRepository.Save(procedure);
@@ -100,9 +108,9 @@ namespace Quality_Management.Services
             {
                 throw new ArgumentNullException($"El tramite no existe");
             }
-
+            
             //id ,  office, place, start, end.
-            ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.Office,
+            ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.Office.OfficeId,
                 procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd);
 
             return procedureDTO;
