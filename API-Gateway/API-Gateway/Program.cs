@@ -1,5 +1,6 @@
 using API_Gateway.Client.Pages;
 using API_Gateway.Components;
+using API_Gateway.Services;
 using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,16 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddRadzenComponents();
+
+builder.Services.AddHttpClient<CommercialOfficeService>(static client =>
+{
+    client.BaseAddress = new("http://commercial-office");
+});
+
+builder.Services.AddHttpClient<QualityManagementService>(static client =>
+{
+    client.BaseAddress = new("http://quality-management");
+});
 
 var app = builder.Build();
 
