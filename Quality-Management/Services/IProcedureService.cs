@@ -34,6 +34,14 @@ namespace Quality_Management.Services
         /// <returns> Devuelve el promedio de tiempo </returns>
         public Task<string> ProceduresAverageTime(string officeId);
 
+        /// <summary>
+        /// Funcion que obtiene el promedio del tiempo de espera de los usuarios en la cola
+        /// </summary>
+        /// <param name="officeId">Identificador de la oficina de la cual se quiere obtener el dato </param>
+        /// <returns >Devuelve el promedio de tiempo de espera </returns>
+        public Task<string> ProceduresAverageWaitTime(string officeId);
+
+
 
         /// <summary>
         /// Funcion para obtener un procedimiento utilizando su identificador.

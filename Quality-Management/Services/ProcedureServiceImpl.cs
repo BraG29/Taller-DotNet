@@ -159,6 +159,31 @@ namespace Quality_Management.Services
             return procedureDTO;
         }
 
+        public async Task<string> ProceduresAverageWaitTime(string officeId)
+        {
+
+            IList<Procedure> procedures = await _procedureRepository.FindProceduresByOffice(officeId);
+
+            TimeSpan total = TimeSpan.Zero;
+
+            //Aplicar controles ya que fechas por defecto me causan medidas negativas
+            foreach (Procedure procedure in procedures)
+            {
+
+                if(TimeSpan.TryParse(procedure.WaitTime, out TimeSpan durationWaitTime)){
+
+                    total += durationWaitTime;
+
+                }
+
+            }
+
+            TimeSpan average = new TimeSpan(total.Ticks / procedures.Count);
+
+            string averageString = average.ToString(@"hh\:mm\:ss");
+
+            return averageString;
+        }
     }
 
 }

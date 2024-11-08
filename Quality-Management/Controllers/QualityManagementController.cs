@@ -146,6 +146,26 @@ namespace Quality_Management.Controllers
                 return NotFound(e.Message);
             }
         }
+
+        [HttpGet]
+        [Route("getProceduresAverageWaitTime/{officeId}")]
+        public async Task<ActionResult<string>> getProceduresAverageWaitTime(string officeId)
+        {
+            try
+            {
+                var average = await _procedureService.ProceduresAverageWaitTime(officeId);
+                return Ok(average);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al obtener: " + ex);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocurrió un error inesperado: " + ex.Message);
+            }
+        }
+
     }
 }
 
