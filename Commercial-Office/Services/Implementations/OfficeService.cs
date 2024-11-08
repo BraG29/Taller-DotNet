@@ -253,7 +253,7 @@ namespace Commercial_Office.Services.Implementations
 
             queue.Enqueue(new TimedQueueItem<string>(userId));
 
-            //_qualityManagementService.CallClientRegistration(officeId);
+            _qualityManagementService.CallClientRegistration(officeId);
         }
 
         public async Task CallNextUser(string officeId, long placeNumber)

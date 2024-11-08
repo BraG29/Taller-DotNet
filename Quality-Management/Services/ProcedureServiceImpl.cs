@@ -9,10 +9,12 @@ namespace Quality_Management.Services
     public class ProcedureServiceImpl : IProcedureService
     {
         private readonly IProcedureRepository _procedureRepository;
+        private readonly IOfficeRepository _officeRepository;
 
-        public ProcedureServiceImpl(IProcedureRepository procedureRepository)
+        public ProcedureServiceImpl(IProcedureRepository procedureRepository, IOfficeRepository officeRepository)
         {
             _procedureRepository = procedureRepository;
+            _officeRepository = officeRepository;
         }
 
         public async Task<long> CreateProcedure(ProcedureDTO procedureDTO)
@@ -27,9 +29,17 @@ namespace Quality_Management.Services
             {
                 throw new ArgumentNullException($"Identificador de oficina vacio");
             }
+
+            if (!_officeRepository.ExistsById(procedureDTO.OfficeId))
+            {
+                throw new ArgumentException($"No existe la oficina {procedureDTO.OfficeId}");
+            }
+            
             try
             {
-                Procedure procedure = new Procedure(0, procedureDTO.OfficeId, procedureDTO.PlaceNumber, procedureDTO.ProcedureStart);
+
+                Procedure procedure = new Procedure(0, _officeRepository.FindById(procedureDTO.OfficeId), procedureDTO.PlaceNumber, procedureDTO.ProcedureStart,
+                    procedureDTO.WaitTime);
 
                 //devolver id generado
                 return await _procedureRepository.Save(procedure);
@@ -79,15 +89,54 @@ namespace Quality_Management.Services
         }
 
         //cant tramites x oficina
-        //tiempo promedio tramites x oficina
-        public Task<long> ProceduresAmount(string officeId)
+        public async Task<long> ProceduresAmount(string officeId)
         {
-            throw new NotImplementedException();
+
+            if (officeId == null)
+            {
+                throw new ArgumentNullException($"identificador de oficina vacio");
+            }
+
+            try
+            {
+                IList<Procedure> procedures = await _procedureRepository.FindProceduresByOffice(officeId);
+
+                Console.WriteLine($"Cantidad de tramites: {procedures.Count} por oficina: {officeId}");
+
+                return procedures.Count;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new DbUpdateConcurrencyException(ex.ToString());
+            }
+            
         }
 
-        public Task<double> ProceduresAverageTime(string officeId)
+        //tiempo promedio tramites x oficina
+        public async Task<string> ProceduresAverageTime(string officeId)
         {
-            throw new NotImplementedException();
+
+            IList<Procedure> procedures = await _procedureRepository.FindProceduresByOffice(officeId);
+            
+            TimeSpan total = TimeSpan.Zero;
+            
+
+            //Aplicar controles ya que fechas por defecto me causan medidas negativas
+
+            foreach (Procedure procedure in procedures)
+            {
+                DateTime start = procedure.ProcedureStart;
+                DateTime end = procedure.ProcedureEnd;
+                TimeSpan duration = end - start;
+
+                total += duration;
+            }
+
+            TimeSpan average = new TimeSpan(total.Ticks / procedures.Count);
+            
+            string averageString = average.ToString(@"hh\:mm\:ss");
+
+            return averageString;
         }
 
 
@@ -100,10 +149,12 @@ namespace Quality_Management.Services
             {
                 throw new ArgumentNullException($"El tramite no existe");
             }
-
+            
             //id ,  office, place, start, end.
-            ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.Office,
-                procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd);
+            ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.Office.OfficeId,
+                procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd,
+                procedure.WaitTime);
+
 
             return procedureDTO;
         }

@@ -19,7 +19,6 @@ namespace Quality_Management.Infraestructure
              _context.Procedures.Add(procedure);
             await _context.SaveChangesAsync();     
             return procedure.Id;
-
         }
 
         public async Task Delete(Procedure procedure)
@@ -39,10 +38,14 @@ namespace Quality_Management.Infraestructure
         }
 
         public async Task Update(Procedure procedure)
-
         {
             _context.Entry(procedure).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IList<Procedure>> FindProceduresByOffice(string officeId)
+        {
+            return await _context.Procedures.Where(procedure => procedure.Office.OfficeId.Contains(officeId)).ToListAsync();
         }
     }
 }

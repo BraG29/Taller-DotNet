@@ -32,7 +32,7 @@ namespace Quality_Management.Services
         /// </summary>
         /// <param name="officeId"> Identificador de la oficina de la cual se quiere obtener el dato </param>
         /// <returns> Devuelve el promedio de tiempo </returns>
-        public Task<Double> ProceduresAverageTime(string officeId);
+        public Task<string> ProceduresAverageTime(string officeId);
 
 
         /// <summary>

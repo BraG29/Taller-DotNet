@@ -42,7 +42,7 @@ public class RealTimeMetricsService : IRealTimeMetricsService
         return metrics;
     }
 
-    public async void SendMetric(IRealTimeMetricsService.ChangeMetricStatus operation, string officeId)
+    public async Task SendMetric(IRealTimeMetricsService.ChangeMetricStatus operation, string officeId)
     {
         if (!ExistsOffice(officeId)) throw new ArgumentException($"No existe la oficina '{officeId}'");
         

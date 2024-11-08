@@ -343,7 +343,7 @@ namespace Commercial_Office.Controllers
             {
                 Console.WriteLine("Asignando usuario  al puesto :" + placeNumber + " de la oficina: " + officeId);
                 await _officeService.ReleasePosition(officeId, placeNumber);
-                return Ok("Oficina liberada con exito");
+                return Ok("Puesto libreado con exito");
             }
             catch (ArgumentNullException ex)
             {

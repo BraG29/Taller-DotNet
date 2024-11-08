@@ -16,11 +16,14 @@ namespace Quality_Management.Controllers
     {
         private readonly IProcedureService _procedureService;
         private readonly IRealTimeMetricsService _realTimeMetricsService;
+        private readonly IOfficeRepository _officeRepository;
 
-        public QualityManagementController(IProcedureService procedureService, IRealTimeMetricsService realTimeMetricsService)
+        public QualityManagementController(IProcedureService procedureService, 
+            IRealTimeMetricsService realTimeMetricsService, IOfficeRepository officeRepository)
         {
             _procedureService = procedureService;
             _realTimeMetricsService = realTimeMetricsService;
+            _officeRepository = officeRepository;
         }
         
         [HttpPost]
@@ -29,17 +32,22 @@ namespace Quality_Management.Controllers
         {
             try
             {
+                await _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientLeavesTheQueue, 
+                    procedure.OfficeId);
                 long id = await _procedureService.CreateProcedure(procedure);
-                _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientLeavesTheQueue, procedure.OfficeId);
                 return Ok(id);
             }
-            catch(ArgumentNullException ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest("Fallo al crear tramite: " + ex);
             }
-            catch(DbUpdateException ex)
+            catch (DbUpdateException ex)
             {
                 return Conflict("Fallo al crear el tramite: " + ex);
+            }
+            catch (ArgumentException e)
+            {
+                return NotFound(e.Message);
             }
             catch (Exception ex)
             {
@@ -51,15 +59,24 @@ namespace Quality_Management.Controllers
 
         [HttpPut]
         [Route("finishProcedure/{Id}")]
-        public async Task<ActionResult> FinishProcedure(long Id, [FromBody] DateTime ProcedureEnd)
+        public async Task<ActionResult> FinishProcedure(long id, [FromBody] DateTime procedureEnd)
         {
             try
             {
-                await _procedureService.EndProcedure(Id, ProcedureEnd);
+                await _procedureService.EndProcedure(id, procedureEnd);
+                
+                await _realTimeMetricsService.SendMetric(_realTimeMetricsService.PositionReleased,
+                    _officeRepository.FindByProcedure(id).OfficeId);
+                
                 return Ok("Tramite finalizado con exito. ");
             }
-            catch (ArgumentNullException ex) {
+            catch (ArgumentNullException ex)
+            {
                 return BadRequest("Fallo al finalizar: " + ex);
+            }
+            catch (ArgumentException e)
+            {
+                return NotFound(e.Message);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -73,18 +90,36 @@ namespace Quality_Management.Controllers
             {
                 return StatusCode(500, "Ocurrió un error inesperado: " + ex.Message);
             }
-
         }
 
-
+        //Esto esta funcionando para pedir promedio de duracion de tramites por oficina
         [HttpGet]
-        [Route("getProcedure/{ProcedureId}")]
-        public async Task<ActionResult<ProcedureDTO>> getProcedure(long ProcedureId)
+        [Route("getProceduresAverageTime/{officeId}")]
+        public async Task<ActionResult<string>> getProceduresAverageTime(string officeId)
         {
             try
             {
-                var procedure = await _procedureService.GetProcedure(ProcedureId);
-                return Ok(procedure);
+                var average = await _procedureService.ProceduresAverageTime(officeId);
+                return Ok(average);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest("Fallo al obtener: " + ex);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocurrió un error inesperado: " + ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("getProceduresAmount/{officeId}")]
+        public async Task<ActionResult<long>> getProceduresAmount(string officeId)
+        {
+            try
+            {
+                var amount = await _procedureService.ProceduresAmount(officeId);
+                return Ok(amount);
             }
             catch (ArgumentNullException ex)
             {
@@ -102,7 +137,7 @@ namespace Quality_Management.Controllers
         {
             try
             {
-                _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientEnterTheQueue, officeId);
+                await _realTimeMetricsService.SendMetric(_realTimeMetricsService.ClientEnterTheQueue, officeId);
                 return Ok();
             }
             catch (ArgumentException e)

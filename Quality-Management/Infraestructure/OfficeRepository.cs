@@ -29,4 +29,15 @@ public class OfficeRepository : IOfficeRepository
     {
         return _context.Offices.Find(officeId);
     }
+
+    public Office FindByProcedure(long procedureId)
+    {
+        Office? office = _context.Offices
+            .FirstOrDefault(office => office.Procedures != null && office.Procedures
+                .Any(procedure => procedure.Id == procedureId));
+
+        if (office == null) throw new ArgumentException("No existe una oficina para ese tramite");
+
+        return office;
+    }
 }
