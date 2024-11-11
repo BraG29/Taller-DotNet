@@ -104,7 +104,7 @@ namespace Quality_Management.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest("Fallo al obtener: " + ex);
+                return NotFound("Fallo al obtener: " + ex);
             }
             catch (Exception ex)
             {
@@ -120,6 +120,10 @@ namespace Quality_Management.Controllers
             {
                 var amount = await _procedureService.ProceduresAmount(officeId);
                 return Ok(amount);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                return BadRequest("Fallo al obtener: " + ex);
             }
             catch (ArgumentNullException ex)
             {

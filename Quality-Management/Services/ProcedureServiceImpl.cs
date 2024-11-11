@@ -112,27 +112,42 @@ namespace Quality_Management.Services
             
         }
 
-        //tiempo promedio tramites x oficina
         public async Task<string> ProceduresAverageTime(string officeId)
         {
 
+            if (officeId == null)
+            {
+                throw new ArgumentNullException($"Identificador vacio");
+            }
+
             IList<Procedure> procedures = await _procedureRepository.FindProceduresByOffice(officeId);
             
-            TimeSpan total = TimeSpan.Zero;
-            
+            if(procedures == null)
+            {
+                throw new ArgumentNullException($"No se encontró la oficina");
+            }
 
-            //Aplicar controles ya que fechas por defecto me causan medidas negativas
+            TimeSpan total = TimeSpan.Zero;
+
+            int validDate = 0; //contador para fechas validas
 
             foreach (Procedure procedure in procedures)
             {
                 DateTime start = procedure.ProcedureStart;
                 DateTime end = procedure.ProcedureEnd;
-                TimeSpan duration = end - start;
 
-                total += duration;
+                if (start != DateTime.MinValue || end != DateTime.MinValue)
+                {
+                    TimeSpan duration = end - start;
+
+                    total += duration;
+                    validDate++;
+                } 
             }
 
-            TimeSpan average = new TimeSpan(total.Ticks / procedures.Count);
+            //Realizo un promedio utilizando los ticks del total y divido entre las fechas validas,
+            //omitiendo fechas invalidas, ej: valores por defecto.
+            TimeSpan average = new TimeSpan(total.Ticks / validDate);
             
             string averageString = average.ToString(@"hh\:mm\:ss");
 
@@ -188,72 +203,4 @@ namespace Quality_Management.Services
 
 }
 
-/*
-public async Task DeleteProcedure(long procedureId)
-{
-
-    try
-    {
-        var procedure = await _procedureRepository.FindById(procedureId);
-
-        if (procedure == null)
-        {
-            throw new ArgumentNullException($"El tramite no existe");
-        }
-
-        await _procedureRepository.Delete(procedure);
-    }
-    catch (DbUpdateException ex)
-    {
-        throw new DbUpdateException(ex.ToString());
-    }
-
-}
-
-}
-
-public async Task<IList<ProcedureDTO>> GetAll()
-{
-    try
-    {
-        var procedureList = await _procedureRepository.FindAll();
-
-        ProcedureDTO procedureDTO;
-        IList<ProcedureDTO> procedureDTOList = new List<ProcedureDTO>();
-
-        foreach (Procedure procedure in procedureList)
-        {
-
-            procedureDTO = new ProcedureDTO(procedure.Id, procedure.OfficeId,
-                procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd);
-
-            procedureDTOList.Add(procedureDTO);
-        }
-
-        return procedureDTOList;
-    }
-    catch(Exception ex) {
-
-        throw new Exception(ex.ToString());
-
-    }
-}
-
-public async Task<ProcedureDTO> GetProcedure(long procedureId)
-{
-
-    var procedure = await _procedureRepository.FindById(procedureId);
-
-    if (procedure == null)
-    {
-        throw new ArgumentNullException($"El tramite no existe");
-    }
-
-    //id ,  office, place, start, end.
-    ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.OfficeId,
-        procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd);
-
-    return procedureDTO;
-}
-*/
 
