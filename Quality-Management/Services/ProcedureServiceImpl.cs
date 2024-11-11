@@ -37,7 +37,6 @@ namespace Quality_Management.Services
             
             try
             {
-
                 Procedure procedure = new Procedure(0, _officeRepository.FindById(procedureDTO.OfficeId), procedureDTO.PlaceNumber, procedureDTO.ProcedureStart,
                     procedureDTO.WaitTime);
 
