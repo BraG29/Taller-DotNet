@@ -1,0 +1,32 @@
+﻿@page "/counter"
+@using Microsoft.AspNetCore.SignalR.Client;
+
+<PageTitle>Counter</PageTitle>
+
+
+@code {
+
+    protected async override Task OnInitializedAsync()
+    {
+        var _connection = new HubConnectionBuilder()
+            .WithUrl("http://localhost:5232/quality-management/hub")
+            .Build();
+
+        try
+        {
+            await _connection.StartAsync();
+            Console.WriteLine("Conexión establecida correctamente");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error al conectar con el hub: {e.Message}");
+        }
+
+        _connection.On("ClientEnterTheQueue", (string officeId, int[] args) =>
+        {
+            Console.WriteLine("Datos recibidos mediante SignalR:");
+            Console.WriteLine($"Oficina: {officeId}");
+            Console.WriteLine($"Clientes en la queue: {args[0]}");
+        });
+    }
+}

@@ -1,6 +1,8 @@
-﻿using Commercial_Office.Model;
-using System.Collections.Concurrent;
+﻿using Commercial_Office.DataAccess;
+using Commercial_Office.Model;
+using Microsoft.EntityFrameworkCore;
 using static Commercial_Office.Model.Office;
+using System.Collections.Concurrent;
 
 namespace Commercial_Office.Infraestructure
 {
@@ -9,79 +11,46 @@ namespace Commercial_Office.Infraestructure
 
         private IDictionary<string, Office> _Offices;
 
-        public OfficeRepositoryImpl() { 
-                
-            _Offices = new Dictionary<string, Office>();
+        private CommercialOfficeDbContext _DbContext;
 
-            //Objeto de prueba oficina1
-            ConcurrentQueue<TimedQueueItem<string>> _OfficeQueue1 = new ConcurrentQueue<TimedQueueItem<string>>();
-
-            IList<AttentionPlace> attentionPlaces = new List<AttentionPlace>();
-            AttentionPlace _AttentionPlace1 = new AttentionPlace(1, true);
-            AttentionPlace _AttentionPlace2 = new AttentionPlace(2, true);
-            attentionPlaces.Add(_AttentionPlace1);
-            attentionPlaces.Add(_AttentionPlace2);
-            Office office1 = new Office("OFI-1", _OfficeQueue1, attentionPlaces);
-
-            //Objeto de prueba oficina2
-            ConcurrentQueue<TimedQueueItem<string>> _OfficeQueue2 = new ConcurrentQueue<TimedQueueItem<string>>();
-
-            IList<AttentionPlace> attentionPlaces2 = new List<AttentionPlace>();
-            AttentionPlace _AttentionPlace3 = new AttentionPlace(3, true);
-            AttentionPlace _AttentionPlace4 = new AttentionPlace(4, true);
-            attentionPlaces2.Add(_AttentionPlace3);
-            attentionPlaces2.Add(_AttentionPlace4);
-            Office office2 = new Office("OFI-2", _OfficeQueue2, attentionPlaces2);
-
-            //agrego ambos objetos al diccionario.
-            this._Offices.Add(office1.Identificator,office1);
-            this._Offices.Add(office2.Identificator,office2);
-
-        }
-
-        public void Add(Office office)
-        {
-          
-            if (office.Identificator == null)
-            {
-                throw new ArgumentNullException(); 
-            }
-
-            this._Offices.Add(office.Identificator, office);
-
-        }
-
-        public void Update(Office office){
-
-            if (office.Identificator != null)
-            {
-                this._Offices[office.Identificator] = office;
-            }
-            throw new KeyNotFoundException();
-        }
-        public void Delete(string id)
-        {
-            this._Offices.Remove(id);
-        }
-
-        public Office GetOffice(string identificator)
-        {
-            Office office;
-
-            if (this._Offices.TryGetValue(identificator, out office))
-            {
-                return office;
-            }
+        public OfficeRepositoryImpl(CommercialOfficeDbContext context) { 
             
-            return null;
-           
+            _DbContext = context;
+
+            _Offices = new Dictionary<string, Office>();
         }
 
-        public IList<Office> GetAll()
+        public async Task Add(Office office)
         {
-
-            return this._Offices.Values.ToList();
-
+            await _DbContext.Offices.AddAsync(office);
+            await _DbContext.SaveChangesAsync();
         }
+
+        public async Task Update(Office office)
+        {
+            _DbContext.Entry(office).State = EntityState.Modified;
+            await _DbContext.SaveChangesAsync();
+        }
+        public async Task Delete(Office office)
+        {
+            _DbContext.Offices.Remove(office);
+            await _DbContext.SaveChangesAsync();
+        }
+        public async Task<Office> GetOffice(string id)
+        {
+            var office = await _DbContext.Offices
+             .Include(o => o.AttentionPlaceList)
+             .FirstOrDefaultAsync(o => o.Identificator == id);
+
+            return office;
+        }
+
+        public async Task<IList<Office>> GetAll()
+        {
+            return await _DbContext.Offices
+            .Include(o => o.AttentionPlaceList)
+            .ToListAsync();
+        }
+
     }
 }

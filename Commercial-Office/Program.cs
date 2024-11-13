@@ -1,15 +1,32 @@
 using Commercial_Office.Controllers;
 using Commercial_Office.Infraestructure;
 using Commercial_Office.Model;
-using Commercial_Office.Services;
 using System.Reflection;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Commercial_Office.Hubs;
+using ServiceDefaults;
+using Microsoft.EntityFrameworkCore;
+using Commercial_Office.DataAccess;
+using Commercial_Office.Services.Implementations;
+using Commercial_Office.Services.Interfaces;
+using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
 // Add services to the container.
+
+//MemoryCache 
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<QualityManagementService>(static client =>
+{
+    /*
+     * El nombre usado para el servicio fue el que previamente le configuramos en la app host
+     */
+    client.BaseAddress = new("http://quality-management");
+});
 
 //servicio signalR
 builder.Services.AddSignalR();
@@ -22,13 +39,23 @@ builder.Host.UseSerilog((hostBuilderCtx, loggerConf) =>
         .ReadFrom.Configuration(hostBuilderCtx.Configuration);
 });
 
-//añadir controler singleton
-builder.Services.AddSingleton<IOfficeRepository, OfficeRepositoryImpl>();
-builder.Services.AddSingleton<IOfficeService, OfficeService>();
+
+
+builder.Services.AddScoped<IOfficeRepository, OfficeRepositoryImpl>();
+builder.Services.AddScoped<IOfficeService, OfficeService>();
+
+builder.Services.AddSingleton<IOfficeQueueService, OfficeQueueService>();
 builder.Services.AddSingleton<CommercialOfficeHub>();
 builder.Services.AddSingleton<HubService>();
 
+
+
 builder.Services.AddControllers();
+
+var connectionString = builder.Configuration.GetConnectionString("CODatabase");
+
+builder.Services.AddDbContext<CommercialOfficeDbContext>(options => options.UseSqlServer(connectionString));
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -60,6 +87,8 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -76,6 +105,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseCors(myAllowSpecificOrigins);
+
 app.MapHub<CommercialOfficeHub>("/commercial-office/hub");
 
 app.Run();
