@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Quality_Management.DataAccess;
+using Quality_Management.DTO;
 using Quality_Management.Model;
 
 namespace Quality_Management.Infraestructure;
@@ -39,5 +40,27 @@ public class OfficeRepository : IOfficeRepository
         if (office == null) throw new ArgumentException("No existe una oficina para ese tramite");
 
         return office;
+    }
+
+    public async Task<OfficeDTO> Save(OfficeDTO officeDto)
+    {
+
+        Office office = new Office
+        {
+            OfficeId = officeDto.Id,
+            PositionsAmount = officeDto.PositionsAmount
+        };
+        
+        office = _context.Offices.Add(office).Entity;
+        await _context.SaveChangesAsync();
+        officeDto.Id = office.OfficeId;
+        return officeDto;
+    }
+
+    public async Task Delete(Office? office)
+    {
+        if (office == null) throw new ArgumentException();
+        _context.Remove(office);
+        await _context.SaveChangesAsync();
     }
 }

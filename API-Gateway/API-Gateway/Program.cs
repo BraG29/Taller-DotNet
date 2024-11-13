@@ -2,8 +2,12 @@ using API_Gateway.Client.Pages;
 using API_Gateway.Components;
 using API_Gateway.Services;
 using Radzen;
+using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -22,12 +26,19 @@ builder.Services.AddHttpClient<QualityManagementService>(static client =>
     client.BaseAddress = new("http://quality-management");
 });
 
+builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 else
 {
@@ -40,6 +51,8 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

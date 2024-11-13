@@ -18,8 +18,6 @@ namespace Commercial_Office.Infraestructure
             _DbContext = context;
 
             _Offices = new Dictionary<string, Office>();
-
- 
         }
 
         public async Task Add(Office office)

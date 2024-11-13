@@ -127,6 +127,43 @@ namespace Quality_Management.Controllers
                 return NotFound(e.Message);
             }
         }
+
+        [HttpPost]
+        [Route("create-office")]
+        public async Task<ActionResult<OfficeDTO>> CreateOffice([FromBody] OfficeDTO? office)
+        {
+            if (office == null) return BadRequest("La oficina no puede ser NULL");
+
+            try
+            {
+                office = await _officeRepository.Save(office);
+                return Ok(office);
+                
+            }
+            catch(Exception e) when (e is DbUpdateException or DbUpdateConcurrencyException)
+            {
+                return StatusCode(500, "Ha ocurrido un error a la hora de guardar los datos de la oficina");
+            }
+        }
+
+        [HttpDelete]
+        [Route("delete-office/{officeId}")]
+        public async Task<ActionResult> DeleteOffice(string officeId)
+        {
+            try
+            {
+                await _officeRepository.Delete(_officeRepository.FindById(officeId));
+                return Ok();
+            }
+            catch (Exception e) when (e is DbUpdateException or DbUpdateConcurrencyException)
+            {
+                return StatusCode(500, "Ha ocurrido un error a la hora de eliminar los datos de la oficina");
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest($"No existe una oficina con id: {officeId}");
+            }
+        }
     }
 }
 

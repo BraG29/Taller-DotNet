@@ -1,4 +1,6 @@
-﻿namespace Quality_Management.Model;
+﻿using Quality_Management.DTO;
+
+namespace Quality_Management.Model;
 
 public interface IOfficeRepository
 {
@@ -6,4 +8,6 @@ public interface IOfficeRepository
     public bool ExistsById(string officeId);
     public Office? FindById(string officeId);
     public Office FindByProcedure(long procedureId);
+    public Task<OfficeDTO> Save(OfficeDTO office);
+    public Task Delete(Office? office);
 }
