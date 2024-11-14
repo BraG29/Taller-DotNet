@@ -18,8 +18,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 // Add services to the container.
 
-//MemoryCache 
-builder.Services.AddMemoryCache();
+/* Cliente Redis */
+builder.AddRedisClient(connectionName: "commercial-office-cache");
+
 builder.Services.AddHttpClient<QualityManagementService>(static client =>
 {
     /*
@@ -43,6 +44,7 @@ builder.Host.UseSerilog((hostBuilderCtx, loggerConf) =>
 
 builder.Services.AddScoped<IOfficeRepository, OfficeRepositoryImpl>();
 builder.Services.AddScoped<IOfficeService, OfficeService>();
+builder.Services.AddScoped<IRedisService, RedisService>();
 
 builder.Services.AddSingleton<IOfficeQueueService, OfficeQueueService>();
 builder.Services.AddSingleton<CommercialOfficeHub>();
