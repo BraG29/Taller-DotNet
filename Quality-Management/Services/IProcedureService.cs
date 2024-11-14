@@ -1,4 +1,5 @@
 ﻿using Quality_Management.DTO;
+using Quality_Management.Model;
 using System.Diagnostics.Eventing.Reader;
 
 namespace Quality_Management.Services
@@ -21,54 +22,20 @@ namespace Quality_Management.Services
         public Task EndProcedure(long procedureId, DateTime procedureFinishTime);
 
         /// <summary>
-        /// Funcion que obtiene la cantidad de procedimientos realizados por una oficina
-        /// </summary>
-        /// <param name="officeId"> Identificador de la oficina de la cual se quiere obtener el dato</param>
-        /// <returns> La cantidad de tramites realizados </returns>
-        public Task<long> ProceduresAmount(string officeId);
-
-        /// <summary>
-        /// Funcion que obtiene el promedio de tiempo que demoran los tramites.
+        /// Funcion que obtiene datos necesarios para crear metricas retroactivas.
         /// </summary>
         /// <param name="officeId"> Identificador de la oficina de la cual se quiere obtener el dato </param>
-        /// <returns> Devuelve el promedio de tiempo </returns>
-        public Task<string> ProceduresAverageTime(string officeId);
-
-        /// <summary>
-        /// Funcion que obtiene el promedio del tiempo de espera de los usuarios en la cola
-        /// </summary>
-        /// <param name="officeId">Identificador de la oficina de la cual se quiere obtener el dato </param>
-        /// <returns >Devuelve el promedio de tiempo de espera </returns>
-        public Task<string> ProceduresAverageWaitTime(string officeId);
-
-
+        /// <param name="range"> Rango de tiempo semana, mes o año</param>
+        /// <param name="interval"> Intervalo en el que se organizan los datos, en semanas, dias o meses</param>
+        /// <returns> Devuelve el promedio de tiempo, en el intervalo seleccionado  </returns>
+        public Task<IList<ProcedureMetricsDTO>> RetroactiveMetricsData(string officeId, TimeRange range);
 
         /// <summary>
         /// Funcion para obtener un procedimiento utilizando su identificador.
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="procedureId"></param>
         /// <returns> Un procedimiento especifico de tipo ProcedureDTO</returns>
-        public Task<ProcedureDTO> GetProcedure(long procedurId);
+        public Task<ProcedureDTO> GetProcedure(long procedureId);
     }
 
 }
-
-/*
-      /// <summary>
-      /// Funcion para eliminar un tramite utilizando su identificador.
-      /// </summary>
-      /// <param name="id"></param>
-      public Task DeleteProcedure(long procedureId);
-
-      /// <summary>
-      /// Funcion para obtener un procedimiento utilizando su identificador.
-      /// </summary>
-      /// <param name="id"></param>
-      /// <returns> Un procedimiento especifico de tipo ProcedureDTO</returns>
-      public Task<ProcedureDTO> GetProcedure(long procedurId);
-
-      /// <summary>
-      /// Funcion para obtener todos los tramites registrados en el sistema
-      /// </summary>
-      /// <returns> Una lista de tramites</returns>
-      public Task<IList<ProcedureDTO>> GetAll();*/

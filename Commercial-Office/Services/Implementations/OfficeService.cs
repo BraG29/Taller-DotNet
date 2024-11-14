@@ -80,7 +80,6 @@ namespace Commercial_Office.Services.Implementations
 
         }
 
-
         public async Task UpdateOffice(string officeId, IList<AttentionPlaceDTO> placesDTO)
         {
             if (officeId == null || placesDTO == null)
@@ -233,8 +232,6 @@ namespace Commercial_Office.Services.Implementations
 
         }
 
-
-
         public async Task RegisterUser(string userId, string officeId)
         {
 
@@ -386,11 +383,6 @@ namespace Commercial_Office.Services.Implementations
             }
 
         }
-
-        //FUNCIONES DE METRICAS
-        //Obtener cant usuarios en espera
-        //Promedio de espera
-        //fecha de consultas
 
     }
 }

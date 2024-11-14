@@ -26,6 +26,11 @@ namespace Quality_Management.Controllers
             _officeRepository = officeRepository;
         }
         
+        /// <summary>
+        /// Funcion que crea un tramite
+        /// </summary>
+        /// <param name="procedure">Recibe un DTO con datos necesario para crear el tramite</param>
+        /// <returns>Devuelve el identificador del mismo. </returns>
         [HttpPost]
         [Route("startProcedure")]
         public async Task<ActionResult<long>> CreateProcedure(ProcedureDTO procedure)
@@ -56,10 +61,14 @@ namespace Quality_Management.Controllers
 
         }
 
-
+        /// <summary>
+        /// Funcion encarga de finalizar un tramite, asignandole la fecha de finalizacion del mismo.
+        /// </summary>
+        /// <param name="id"> Identificador del tramite a finalizar </param>
+        /// <param name="procedureEnd"> Fecha en la que finalizo el tramite</param>
         [HttpPut]
         [Route("finishProcedure/{Id}")]
-        public async Task<ActionResult> FinishProcedure(long id, [FromBody] DateTime procedureEnd)
+        public async Task<ActionResult<List<ProcedureMetricsDTO>>> FinishProcedure(long id, [FromBody] DateTime procedureEnd)
         {
             try
             {
@@ -92,42 +101,26 @@ namespace Quality_Management.Controllers
             }
         }
 
-        //Esto esta funcionando para pedir promedio de duracion de tramites por oficina
+        /// <summary>
+        /// Endpoint para obtener valores que serán utilizados para construir graficas retroactivas
+        /// </summary>
+        /// <param name="officeId">Recibe el identificador de la oficina, de la que se obtienen los datos</param>
+        /// <param name="range"> Recibe rango de tiempo, 0 = ultima semana, 1 = ultimo mes y 2 = ultimo año </param>
+        /// <returns>Devuelve una lista de DTOs con los datos requeridos</returns>
         [HttpGet]
-        [Route("getProceduresAverageTime/{officeId}")]
-        public async Task<ActionResult<string>> getProceduresAverageTime(string officeId)
+        [Route("getRetroactiveMetrics/{officeId}/{range}")]
+        public async Task<ActionResult<List<ProcedureMetricsDTO>>> getRetroactiveMetrics(
+            string officeId, 
+            TimeRange range)
         {
             try
             {
-                var average = await _procedureService.ProceduresAverageTime(officeId);
+                var average = await _procedureService.RetroactiveMetricsData(officeId, range);
                 return Ok(average);
             }
             catch (ArgumentNullException ex)
             {
                 return NotFound("Fallo al obtener: " + ex);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Ocurrió un error inesperado: " + ex.Message);
-            }
-        }
-
-        [HttpGet]
-        [Route("getProceduresAmount/{officeId}")]
-        public async Task<ActionResult<long>> getProceduresAmount(string officeId)
-        {
-            try
-            {
-                var amount = await _procedureService.ProceduresAmount(officeId);
-                return Ok(amount);
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                return BadRequest("Fallo al obtener: " + ex);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return BadRequest("Fallo al obtener: " + ex);
             }
             catch (Exception ex)
             {
@@ -148,25 +141,6 @@ namespace Quality_Management.Controllers
             {
                 Console.WriteLine($"Error al enviar metrica: {e.Message}");
                 return NotFound(e.Message);
-            }
-        }
-
-        [HttpGet]
-        [Route("getProceduresAverageWaitTime/{officeId}")]
-        public async Task<ActionResult<string>> getProceduresAverageWaitTime(string officeId)
-        {
-            try
-            {
-                var average = await _procedureService.ProceduresAverageWaitTime(officeId);
-                return Ok(average);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return BadRequest("Fallo al obtener: " + ex);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Ocurrió un error inesperado: " + ex.Message);
             }
         }
 

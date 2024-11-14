@@ -43,9 +43,11 @@ namespace Quality_Management.Infraestructure
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IList<Procedure>> FindProceduresByOffice(string officeId)
+        public async Task<IList<Procedure>> FindProceduresByOfficeAndDate(string officeId, DateTime startDate, DateTime endDate)
         {
-            return await _context.Procedures.Where(procedure => procedure.Office.OfficeId.Contains(officeId)).ToListAsync();
+            return await _context.Procedures.Where(procedure => procedure.Office.OfficeId == officeId &&
+            procedure.ProcedureStart >= startDate
+            &&  procedure.ProcedureStart < endDate ).ToListAsync();
         }
     }
 }
