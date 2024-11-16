@@ -32,7 +32,7 @@ namespace Quality_Management.Migrations
 
                     b.HasKey("OfficeId");
 
-                    b.ToTable("Offices", (string)null);
+                    b.ToTable("Offices");
                 });
 
             modelBuilder.Entity("Quality_Management.Model.Procedure", b =>
@@ -55,6 +55,11 @@ namespace Quality_Management.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("procedure_start");
 
+                    b.Property<string>("WaitTime")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("wait_time");
+
                     b.Property<string>("office")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -63,7 +68,7 @@ namespace Quality_Management.Migrations
 
                     b.HasIndex("office");
 
-                    b.ToTable("Procedures", (string)null);
+                    b.ToTable("Procedures");
                 });
 
             modelBuilder.Entity("Quality_Management.Model.Procedure", b =>

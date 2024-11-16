@@ -16,15 +16,18 @@ namespace Quality_Management.DTO
 
         public DateTime ProcedureEnd { get; set; }
 
+        public string WaitTime { get; set; }
+
         public ProcedureDTO() { }
 
-        public ProcedureDTO(long id, string officeId, long placeNumber, DateTime procedureStart, DateTime procedureEnd)
+        public ProcedureDTO(long id, string officeId, long placeNumber, DateTime procedureStart, DateTime procedureEnd, string waitTime)
         {
             Id = id;
             OfficeId = officeId;
             PlaceNumber = placeNumber;
             ProcedureStart = procedureStart;
             ProcedureEnd = procedureEnd;
+            WaitTime = waitTime;
         }
     }
 }

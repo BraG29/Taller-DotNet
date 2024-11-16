@@ -32,7 +32,8 @@ namespace Quality_Management.Migrations
                     office = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     place_number = table.Column<long>(type: "bigint", nullable: false),
                     procedure_start = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    procedure_end = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    procedure_end = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    wait_time = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {

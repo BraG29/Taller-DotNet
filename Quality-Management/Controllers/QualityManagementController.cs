@@ -26,6 +26,11 @@ namespace Quality_Management.Controllers
             _officeRepository = officeRepository;
         }
         
+        /// <summary>
+        /// Funcion que crea un tramite
+        /// </summary>
+        /// <param name="procedure">Recibe un DTO con datos necesario para crear el tramite</param>
+        /// <returns>Devuelve el identificador del mismo. </returns>
         [HttpPost]
         [Route("startProcedure")]
         public async Task<ActionResult<long>> CreateProcedure(ProcedureDTO procedure)
@@ -56,17 +61,21 @@ namespace Quality_Management.Controllers
 
         }
 
-
+        /// <summary>
+        /// Funcion encarga de finalizar un tramite, asignandole la fecha de finalizacion del mismo.
+        /// </summary>
+        /// <param name="id"> Identificador del tramite a finalizar </param>
+        /// <param name="procedureEnd"> Fecha en la que finalizo el tramite</param>
         [HttpPut]
         [Route("finishProcedure/{Id}")]
-        public async Task<ActionResult> FinishProcedure(long Id, [FromBody] DateTime ProcedureEnd)
+        public async Task<ActionResult<List<ProcedureMetricsDTO>>> FinishProcedure(long id, [FromBody] DateTime procedureEnd)
         {
             try
             {
-                await _procedureService.EndProcedure(Id, ProcedureEnd);
+                await _procedureService.EndProcedure(id, procedureEnd);
                 
                 await _realTimeMetricsService.SendMetric(_realTimeMetricsService.PositionReleased,
-                    _officeRepository.FindByProcedure(Id).OfficeId);
+                    _officeRepository.FindByProcedure(id).OfficeId);
                 
                 return Ok("Tramite finalizado con exito. ");
             }
@@ -92,19 +101,26 @@ namespace Quality_Management.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Endpoint para obtener valores que serán utilizados para construir graficas retroactivas
+        /// </summary>
+        /// <param name="officeId">Recibe el identificador de la oficina, de la que se obtienen los datos</param>
+        /// <param name="range"> Recibe rango de tiempo, 0 = ultima semana, 1 = ultimo mes y 2 = ultimo año </param>
+        /// <returns>Devuelve una lista de DTOs con los datos requeridos</returns>
         [HttpGet]
-        [Route("getProcedure/{ProcedureId}")]
-        public async Task<ActionResult<ProcedureDTO>> getProcedure(long ProcedureId)
+        [Route("getRetroactiveMetrics/{officeId}/{range}")]
+        public async Task<ActionResult<List<ProcedureMetricsDTO>>> getRetroactiveMetrics(
+            string officeId, 
+            TimeRange range)
         {
             try
             {
-                var procedure = await _procedureService.GetProcedure(ProcedureId);
-                return Ok(procedure);
+                var average = await _procedureService.RetroactiveMetricsData(officeId, range);
+                return Ok(average);
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest("Fallo al obtener: " + ex);
+                return NotFound("Fallo al obtener: " + ex);
             }
             catch (Exception ex)
             {
@@ -127,6 +143,7 @@ namespace Quality_Management.Controllers
                 return NotFound(e.Message);
             }
         }
+
 
         [HttpPost]
         [Route("create-office")]
@@ -164,71 +181,6 @@ namespace Quality_Management.Controllers
                 return BadRequest($"No existe una oficina con id: {officeId}");
             }
         }
+
     }
 }
-
-
-
-/*
-[HttpDelete]
-[Route("deleteProcedure/{ProcedureId}")]
-public async Task<ActionResult> deleteProcedure(long ProcedureId)
-{
-
-    try
-    {
-        await _procedureService.DeleteProcedure(ProcedureId);
-        return Ok("Tramite Eliminado");
-    }
-    catch (ArgumentNullException ex)
-    {
-        return BadRequest("Fallo al eliminar: " + ex);
-    }
-    catch (DbUpdateConcurrencyException ex)
-    {
-        return Conflict("Fallo al eliminar: " + ex);
-    }
-    catch (DbUpdateException ex)
-    {
-        return Conflict("Fallo al eliminar: " + ex);
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, "Ocurrió un error inesperado: " + ex.Message);
-    }
-
-}
-
-[HttpGet]
-[Route("getProcedure/{ProcedureId}")]
-public async Task<ActionResult<ProcedureDTO>> getProcedure(long ProcedureId)
-{
-    try
-    {
-        var procedure = await _procedureService.GetProcedure(ProcedureId);
-        return Ok(procedure);
-    }
-    catch (ArgumentNullException ex)
-    {
-        return BadRequest("Fallo al obtener: " + ex);
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, "Ocurrió un error inesperado: " + ex.Message);
-    }
-}
-
-[HttpGet]
-[Route("getProcedures")]
-public async Task<ActionResult<IList<ProcedureDTO>>> getProcedures()
-{
-    try
-    {
-        var procedures = await _procedureService.GetAll();
-        return Ok(procedures);
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, "Ocurrió un error inesperado: " + ex.Message);
-    }
-}*/

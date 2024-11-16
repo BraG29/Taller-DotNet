@@ -80,7 +80,6 @@ namespace Commercial_Office.Services.Implementations
 
         }
 
-
         public async Task UpdateOffice(string officeId, IList<AttentionPlaceDTO> placesDTO)
         {
             if (officeId == null || placesDTO == null)
@@ -233,8 +232,6 @@ namespace Commercial_Office.Services.Implementations
 
         }
 
-
-
         public async Task RegisterUser(string userId, string officeId)
         {
 
@@ -289,12 +286,20 @@ namespace Commercial_Office.Services.Implementations
                 //Si hay usuarios en la queue saco uno para ocupar el puesto desde el que lo llaman
                 if (queue.TryDequeue(out TimedQueueItem<string>? userId))
                 {
+                    DateTime dequeuedTime = DateTime.Now;
+                    DateTime enqueuedTime = userId.EnqueuedTime; //pasar tiempo de espera
 
                     place.IsAvailable = false; //ocupo el puesto
 
-                    DateTime waitTime = userId.EnqueuedTime; //pasar tiempo de espera
-                    
-                    string procedureIdString = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.Now);
+                    TimeSpan waitTime = dequeuedTime - enqueuedTime;
+
+                    Console.WriteLine("Tiempo de espera: " + waitTime.ToString());
+
+                    string timeDifferenceString = waitTime.ToString(@"hh\:mm\:ss");
+
+                    Console.WriteLine("Tiempo de espera en string: " + timeDifferenceString);
+
+                    string procedureIdString = await _qualityManagementService.StartProcedure(officeId, placeNumber, DateTime.Now, timeDifferenceString);
 
                     if (procedureIdString == null)
                     {
@@ -378,11 +383,6 @@ namespace Commercial_Office.Services.Implementations
             }
 
         }
-
-        //FUNCIONES DE METRICAS
-        //Obtener cant usuarios en espera
-        //Promedio de espera
-        //fecha de consultas
 
     }
 }

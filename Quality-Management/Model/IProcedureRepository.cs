@@ -11,5 +11,7 @@ namespace Quality_Management.Model
         public Task<IList<Procedure>> FindAll();
         public Task Update(Procedure procedure);
 
+        public Task<IList<Procedure>> FindProceduresByOfficeAndDate(string officeId, DateTime startDate, DateTime endDate);
+
     }
 }
