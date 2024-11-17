@@ -9,11 +9,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
         <ProjectReference Include="..\..\DotNET-APP.ServiceDefauts\DotNET-APP.ServiceDefauts.csproj" />
         <ProjectReference Include="..\API-Gateway.Client\API-Gateway.Client.csproj"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0"/>
-        <ProjectReference Include="..\DotNET-APP.ServiceDefauts\DotNET-APP.ServiceDefauts.csproj" />
     </ItemGroup>
 
 </Project>
