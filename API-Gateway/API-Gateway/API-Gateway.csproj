@@ -9,8 +9,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\API-Gateway.Client\API-Gateway.Client.csproj"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0"/>
+        <ProjectReference Include="..\API-Gateway.Client\API-Gateway.Client.csproj" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="8.0.10" />
     </ItemGroup>
 
 </Project>
