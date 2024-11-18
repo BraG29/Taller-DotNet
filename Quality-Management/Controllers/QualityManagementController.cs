@@ -67,7 +67,7 @@ namespace Quality_Management.Controllers
         /// <param name="id"> Identificador del tramite a finalizar </param>
         /// <param name="procedureEnd"> Fecha en la que finalizo el tramite</param>
         [HttpPut]
-        [Route("finishProcedure/{Id}")]
+        [Route("finishProcedure/{id}")]
         public async Task<ActionResult<List<ProcedureMetricsDTO>>> FinishProcedure(long id, [FromBody] DateTime procedureEnd)
         {
             try
