@@ -10,17 +10,12 @@
 
     <ItemGroup>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
-        <ProjectReference Include="..\..\DotNET-APP.ServiceDefauts\DotNET-APP.ServiceDefauts.csproj" />
-<<<<<<< HEAD
         <ProjectReference Include="..\API-Gateway.Client\API-Gateway.Client.csproj"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.10" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="8.0.10" />
-=======
-        <ProjectReference Include="..\API-Gateway.Client\API-Gateway.Client.csproj" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" />
         <ProjectReference Include="..\..\DotNET-APP.ServiceDefauts\DotNET-APP.ServiceDefauts.csproj" />
->>>>>>> 5af84cd7a68007d51df6e282445547ef69b474cf
+
     </ItemGroup>
 
 </Project>
