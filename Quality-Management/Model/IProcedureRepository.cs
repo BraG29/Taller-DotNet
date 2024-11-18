@@ -13,5 +13,6 @@ namespace Quality_Management.Model
 
         public Task<IList<Procedure>> FindProceduresByOfficeAndDate(string officeId, DateTime startDate, DateTime endDate);
 
+
     }
 }

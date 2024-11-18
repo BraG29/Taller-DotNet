@@ -26,9 +26,9 @@ namespace Quality_Management.Services
         /// </summary>
         /// <param name="officeId"> Identificador de la oficina de la cual se quiere obtener el dato </param>
         /// <param name="range"> Rango de tiempo semana, mes o año</param>
-        /// <param name="interval"> Intervalo en el que se organizan los datos, en semanas, dias o meses</param>
         /// <returns> Devuelve el promedio de tiempo, en el intervalo seleccionado  </returns>
         public Task<IList<ProcedureMetricsDTO>> RetroactiveMetricsData(string officeId, TimeRange range);
+
 
         /// <summary>
         /// Funcion para obtener un procedimiento utilizando su identificador.

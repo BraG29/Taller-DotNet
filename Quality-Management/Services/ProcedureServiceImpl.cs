@@ -40,7 +40,6 @@ namespace Quality_Management.Services
                 Procedure procedure = new Procedure(0, _officeRepository.FindById(procedureDTO.OfficeId), procedureDTO.PlaceNumber, procedureDTO.ProcedureStart,
                     procedureDTO.WaitTime);
 
-                //devolver id generado
                 return await _procedureRepository.Save(procedure);
             }
             catch (DbUpdateException ex)
@@ -188,11 +187,11 @@ namespace Quality_Management.Services
                 throw new ArgumentNullException($"El tramite no existe");
             }
 
-            //id ,  office, place, start, end.
+            //id   office, place, start, end.
+
             ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.Office.OfficeId,
                 procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd,
                 procedure.WaitTime);
-
 
             return procedureDTO;
         }
