@@ -3,11 +3,12 @@ using Commercial_Office.DTO;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Commercial_Office.Hubs;
-<<<<<<< HEAD:Commercial-Office/Services/OfficeService.cs
 using Microsoft.AspNetCore.SignalR.Client;
-
-namespace Commercial_Office.Services {
-
+using Microsoft.EntityFrameworkCore;
+using Commercial_Office.Services.Interfaces;
+ 
+namespace Commercial_Office.Services.Implementations
+{
     //here we make a quick static class to properly configure the IHubConnectionBuilder for a SignalR environment
     public static class HubConnectionExtensions{
 
@@ -21,45 +22,28 @@ namespace Commercial_Office.Services {
         }
     }
 
-=======
-using Microsoft.EntityFrameworkCore;
-using Commercial_Office.Services.Interfaces;
 
-namespace Commercial_Office.Services.Implementations
-{
->>>>>>> f96acf85cdbd7ad9ba91ae2892649de0dcf0c3f1:Commercial-Office/Services/Implementations/OfficeService.cs
-    public class OfficeService : IOfficeService
-    {
+        public class OfficeService : IOfficeService{
 
         private readonly IOfficeRepository _officeRepository;
         private readonly ILogger<OfficeService> _logger;
-<<<<<<< HEAD:Commercial-Office/Services/OfficeService.cs
         private readonly QualityManagementService  _qualityManagementService;
         private readonly HubConnection _hubApiGatewayConnection;
-
-
-
+        private readonly HubService _hubService;
+        private readonly IHubContext<CommercialOfficeHub> _hub;
+        private readonly IOfficeQueueService _queueService;
 
         public OfficeService(IOfficeRepository officeRepository,
                             ILogger<OfficeService> logger,
+                            HubService service,
+                            IHubContext<CommercialOfficeHub> hub,
                             QualityManagementService qualityManagementService,
-                            IHttpMessageHandlerFactory msgFactory) {
+                            IOfficeQueueService queueService,
+                            IHttpMessageHandlerFactory msgFactory){
 
-=======
-        private readonly HubService _hubService;
-        private readonly IHubContext<CommercialOfficeHub> _hub;
-        private readonly QualityManagementService _qualityManagementService;
-        private readonly IOfficeQueueService _queueService;
-
-        public OfficeService(IOfficeRepository officeRepository, ILogger<OfficeService> logger,
-            HubService service, IHubContext<CommercialOfficeHub> hub,
-            QualityManagementService qualityManagementService, IOfficeQueueService queueService)
-        {
->>>>>>> f96acf85cdbd7ad9ba91ae2892649de0dcf0c3f1:Commercial-Office/Services/Implementations/OfficeService.cs
             _officeRepository = officeRepository;
             _logger = logger;
             _qualityManagementService = qualityManagementService;
-<<<<<<< HEAD:Commercial-Office/Services/OfficeService.cs
 
             var hubConnection = new HubConnectionBuilder();
 
@@ -70,13 +54,7 @@ namespace Commercial_Office.Services.Implementations
             _hubApiGatewayConnection = hubConnection.Build();
         }
 
-        public void CreateOffice(OfficeDTO officeDTO)
-=======
-            _queueService = queueService;
-        }
-
         public async Task CreateOffice(OfficeDTO officeDTO)
->>>>>>> f96acf85cdbd7ad9ba91ae2892649de0dcf0c3f1:Commercial-Office/Services/Implementations/OfficeService.cs
         {
 
             if (officeDTO.Identificator != null)
@@ -356,21 +334,16 @@ namespace Commercial_Office.Services.Implementations
 
                     place.ProcedureId = procedureId;
 
-<<<<<<< HEAD:Commercial-Office/Services/OfficeService.cs
 
                     try{//if the conecction to SignalR has been suspended/killed
 
                         if (_hubApiGatewayConnection.State != HubConnectionState.Connected){
 
                             await _hubApiGatewayConnection.StartAsync();//try to reconenct
-
-                            await _hubApiGatewayConnection.InvokeAsync("RefreshMonitor", userId.Item, place.Number, officeId);
-
-                            _logger.LogInformation("YO SOY EL OfficeService y acabo de enviarle data por SignalR client a HubConnection");
-
+                            await _hubApiGatewayConnection.InvokeAsync("RefreshMonitor", userId.Item, place.Number, officeId);//we send the data
                         }
                         else {
-                            await _hubApiGatewayConnection.InvokeAsync("RefreshMonitor", userId.Item, place.Number, officeId);
+                            await _hubApiGatewayConnection.InvokeAsync("RefreshMonitor", userId.Item, place.Number, officeId);//we send data, without reconnecting
                         }
 
                     }
@@ -378,13 +351,8 @@ namespace Commercial_Office.Services.Implementations
 
                         _logger.LogInformation("YO SOY EL OfficeService y acabo de fallar al pasarla la data por SignalR client a HubConnections" + e.Message.ToString());
                     }
-=======
-                    await _officeRepository.Update(office);
 
-                    //TODO: Consultar
-                    //desde Apigateway
-                    _hub.Clients.All.SendAsync("RefreshMonitor"+officeId, userId.Item, place.Number, officeId);
->>>>>>> f96acf85cdbd7ad9ba91ae2892649de0dcf0c3f1:Commercial-Office/Services/Implementations/OfficeService.cs
+                    await _officeRepository.Update(office);
 
                 }
                 else
@@ -435,18 +403,12 @@ namespace Commercial_Office.Services.Implementations
                     Console.WriteLine("Antes de  tirarle al servicio");
                     await _qualityManagementService.FinishProcedure(place.ProcedureId, DateTime.Now);
 
-<<<<<<< HEAD:Commercial-Office/Services/OfficeService.cs
                     try
                     {//if the conecction to SignalR has been suspended/killed
 
                         if (_hubApiGatewayConnection.State != HubConnectionState.Connected){
-
                             await _hubApiGatewayConnection.StartAsync();//try to reconenct
-
                             await _hubApiGatewayConnection.InvokeAsync("RefreshMonitor", "remove", place.Number, officeId);
-
-                            _logger.LogInformation("YO SOY EL OfficeService y acabo de enviarle data por SignalR client a HubConnection");
-
                         }
                         else{
                             await _hubApiGatewayConnection.InvokeAsync("RefreshMonitor", "remove", place.Number, officeId);
@@ -458,13 +420,10 @@ namespace Commercial_Office.Services.Implementations
 
                         _logger.LogInformation("YO SOY EL OfficeService y acabo de fallar al pasarla la data por SignalR client a HubConnections" + e.Message.ToString());
                     }
-=======
+
                     place.ProcedureId = 0;
                     
                     await _officeRepository.Update(office);
->>>>>>> f96acf85cdbd7ad9ba91ae2892649de0dcf0c3f1:Commercial-Office/Services/Implementations/OfficeService.cs
-
-
                 }
                 else //Si el puesto ya se encuentra libre
                 {
