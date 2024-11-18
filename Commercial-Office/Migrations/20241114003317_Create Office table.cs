@@ -29,24 +29,22 @@ namespace Commercial_Office.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     place_number = table.Column<long>(type: "bigint", nullable: false),
                     State = table.Column<bool>(type: "bit", nullable: false),
-                    ProcedureId = table.Column<long>(type: "bigint", nullable: false),
-                    OfficeId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    OfficeIdentificator = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AttentionPlaces", x => x.PlaceId);
                     table.ForeignKey(
-                        name: "FK_AttentionPlaces_Offices_OfficeId",
-                        column: x => x.OfficeId,
+                        name: "FK_AttentionPlaces_Offices_OfficeIdentificator",
+                        column: x => x.OfficeIdentificator,
                         principalTable: "Offices",
-                        principalColumn: "Identificator",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Identificator");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AttentionPlaces_OfficeId",
+                name: "IX_AttentionPlaces_OfficeIdentificator",
                 table: "AttentionPlaces",
-                column: "OfficeId");
+                column: "OfficeIdentificator");
         }
 
         /// <inheritdoc />

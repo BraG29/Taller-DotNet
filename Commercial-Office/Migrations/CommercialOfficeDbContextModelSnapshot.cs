@@ -38,16 +38,12 @@ namespace Commercial_Office.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("place_number");
 
-                    b.Property<string>("OfficeId")
-                        .IsRequired()
+                    b.Property<string>("OfficeIdentificator")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<long>("ProcedureId")
-                        .HasColumnType("bigint");
 
                     b.HasKey("AttentionPlaceId");
 
-                    b.HasIndex("OfficeId");
+                    b.HasIndex("OfficeIdentificator");
 
                     b.ToTable("AttentionPlaces");
                 });
@@ -64,13 +60,9 @@ namespace Commercial_Office.Migrations
 
             modelBuilder.Entity("Commercial_Office.Model.AttentionPlace", b =>
                 {
-                    b.HasOne("Commercial_Office.Model.Office", "office")
+                    b.HasOne("Commercial_Office.Model.Office", null)
                         .WithMany("AttentionPlaceList")
-                        .HasForeignKey("OfficeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("office");
+                        .HasForeignKey("OfficeIdentificator");
                 });
 
             modelBuilder.Entity("Commercial_Office.Model.Office", b =>

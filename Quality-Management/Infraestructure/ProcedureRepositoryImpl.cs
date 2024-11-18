@@ -30,7 +30,7 @@ namespace Quality_Management.Infraestructure
         
         public async Task<IList<Procedure>> FindAll()
         {
-            return _context.Procedures.ToList();
+            return await _context.Procedures.ToListAsync();
         }
 
         public async Task<Procedure> FindById(long id)

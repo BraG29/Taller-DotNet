@@ -12,7 +12,7 @@ using Quality_Management.DataAccess;
 namespace Quality_Management.Migrations
 {
     [DbContext(typeof(QualityManagementDbContext))]
-    [Migration("20241105191220_Create Procedure table")]
+    [Migration("20241107181801_Create Procedure table")]
     partial class CreateProceduretable
     {
         /// <inheritdoc />
@@ -46,12 +46,6 @@ namespace Quality_Management.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("Office")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)")
-                        .HasColumnName("office");
-
                     b.Property<long>("PlaceNumber")
                         .HasColumnType("bigint")
                         .HasColumnName("place_number");
@@ -64,9 +58,31 @@ namespace Quality_Management.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("procedure_start");
 
+                    b.Property<string>("office")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("office");
+
                     b.ToTable("Procedures");
+                });
+
+            modelBuilder.Entity("Quality_Management.Model.Procedure", b =>
+                {
+                    b.HasOne("Quality_Management.Model.Office", "Office")
+                        .WithMany("Procedures")
+                        .HasForeignKey("office")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Office");
+                });
+
+            modelBuilder.Entity("Quality_Management.Model.Office", b =>
+                {
+                    b.Navigation("Procedures");
                 });
 #pragma warning restore 612, 618
         }

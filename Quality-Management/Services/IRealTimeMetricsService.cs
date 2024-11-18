@@ -8,5 +8,5 @@ public interface IRealTimeMetricsService
     public int[] ClientEnterTheQueue(string officeId);
     public int[] ClientLeavesTheQueue(string officeId);
     public int[] PositionReleased(string officeId);
-    public void SendMetric(IRealTimeMetricsService.ChangeMetricStatus operation, string officeId);
+    public Task SendMetric(IRealTimeMetricsService.ChangeMetricStatus operation, string officeId);
 }

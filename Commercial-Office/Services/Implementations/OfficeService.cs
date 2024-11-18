@@ -17,10 +17,12 @@ namespace Commercial_Office.Services.Implementations
         private readonly IHubContext<CommercialOfficeHub> _hub;
         private readonly QualityManagementService _qualityManagementService;
         private readonly IOfficeQueueService _queueService;
+        private readonly IRedisService _redisService;
 
         public OfficeService(IOfficeRepository officeRepository, ILogger<OfficeService> logger,
             HubService service, IHubContext<CommercialOfficeHub> hub,
-            QualityManagementService qualityManagementService, IOfficeQueueService queueService)
+            QualityManagementService qualityManagementService, IOfficeQueueService queueService,
+            IRedisService redisService)
         {
             _officeRepository = officeRepository;
             _logger = logger;
@@ -28,14 +30,21 @@ namespace Commercial_Office.Services.Implementations
             _hub = hub;
             _qualityManagementService = qualityManagementService;
             _queueService = queueService;
+            _redisService = redisService;
         }
 
         public async Task CreateOffice(OfficeDTO officeDTO)
         {
+            /*
+             * llamar a un async := o
+             *  -----
+             * -----
+             * leo o
+             *
+             */
 
             if (officeDTO.Identificator != null)
             {
-
                 if (await _officeRepository.GetOffice(officeDTO.Identificator) != null)
                 {
                     throw new ArgumentException($"Oficina ya existe");
@@ -56,7 +65,8 @@ namespace Commercial_Office.Services.Implementations
                             throw new ArgumentException($"Numero de puesto no puede ser menor a 0");
                         }
 
-                        AttentionPlace attentionPlace = new AttentionPlace(0, place.Number, true, 0, officeDTO.Identificator);
+                        // AttentionPlace attentionPlace = new AttentionPlace(0, place.Number, true, 0, officeDTO.Identificator);
+                        AttentionPlace attentionPlace = new AttentionPlace(0, place.Number, true);
                         attentionPlaces.Add(attentionPlace);
                     }
                 }
@@ -115,7 +125,8 @@ namespace Commercial_Office.Services.Implementations
                     else
                     {
                         //LLamaria a AddDB
-                        office.AttentionPlaceList.Add(new AttentionPlace(0, placeDTO.Number, placeDTO.Available, 0, officeId));
+                        // office.AttentionPlaceList.Add(new AttentionPlace(0, placeDTO.Number, placeDTO.Available, 0, officeId));
+                        office.AttentionPlaceList.Add(new AttentionPlace(0, placeDTO.Number, placeDTO.Available));
 
                         await _officeRepository.Update(office);
 
@@ -243,8 +254,7 @@ namespace Commercial_Office.Services.Implementations
                 throw new ArgumentNullException($"Identificadores invalidos o vacios");
             }
 
-            Office office = await _officeRepository.GetOffice(officeId);
-            if (office == null)
+            if (await GetOfficeIfExists(officeId) == null)
             {
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
             }
@@ -253,7 +263,7 @@ namespace Commercial_Office.Services.Implementations
 
             queue.Enqueue(new TimedQueueItem<string>(userId));
 
-            //_qualityManagementService.CallClientRegistration(officeId);
+            _qualityManagementService.CallClientRegistration(officeId);
         }
 
         public async Task CallNextUser(string officeId, long placeNumber)
@@ -268,11 +278,12 @@ namespace Commercial_Office.Services.Implementations
                 throw new ArgumentException($"No se aceptan números menores a 0");
             }
 
-            Office office = await _officeRepository.GetOffice(officeId);
+            Office? office = await GetOfficeIfExists(officeId);
             if (office == null)
             {
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
             }
+
 
             try
             {
@@ -280,7 +291,7 @@ namespace Commercial_Office.Services.Implementations
                 AttentionPlace place = office.AttentionPlaceList
                     .First(place => place.Number == placeNumber);
 
-                if (!place.IsAvailable)//si el puesto esta ocupado
+                if (!place.IsAvailable) //si el puesto esta ocupado
                 {
                     throw new ArgumentException($"El puesto esta ocupado");
                 }
@@ -313,11 +324,13 @@ namespace Commercial_Office.Services.Implementations
 
                     place.ProcedureId = procedureId;
 
-                    await _officeRepository.Update(office);
+                    await _redisService.SetValueAsync(officeId, office);
 
                     //TODO: Consultar
                     //desde Apigateway
-                    _hub.Clients.All.SendAsync("RefreshMonitor"+officeId, userId.Item, place.Number, officeId);
+                    _hub.Clients
+                        .All
+                        .SendAsync("RefreshMonitor" + officeId, userId.Item, place.Number, officeId);
 
                 }
                 else
@@ -329,6 +342,10 @@ namespace Commercial_Office.Services.Implementations
             catch (InvalidOperationException)
             {
                 throw new InvalidOperationException($"No existe el puesto");
+            }
+            catch (NullReferenceException e)
+            {
+                Console.WriteLine("El Redis devolvio un valor nulo");
             }
 
         }
@@ -346,8 +363,8 @@ namespace Commercial_Office.Services.Implementations
             {
                 throw new ArgumentException($"No se aceptan números menores a 0");
             }
-
-            Office office = await _officeRepository.GetOffice(officeId);
+            
+            Office? office = await GetOfficeIfExists(officeId);
             if (office == null)
             {
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
@@ -355,6 +372,7 @@ namespace Commercial_Office.Services.Implementations
 
             try
             {
+                
                 //obtener el puesto que coincida con el numero
                 AttentionPlace place = office.AttentionPlaceList
                     .First(place => place.Number == placeNumber);
@@ -370,7 +388,7 @@ namespace Commercial_Office.Services.Implementations
 
                     place.ProcedureId = 0;
                     
-                    await _officeRepository.Update(office);
+                    await _redisService.SetValueAsync(officeId, office);
 
                     _hub.Clients.All.SendAsync("RefreshMonitor"+ officeId, "remove", place.Number, officeId); 
 
@@ -384,6 +402,30 @@ namespace Commercial_Office.Services.Implementations
             {
                throw new InvalidOperationException($"No existe el puesto" + ex.ToString());
             }
+            catch (NullReferenceException e)
+            {
+                Console.WriteLine("El Redis devolvio un valor nulo");
+            }
+
+
+        }
+
+        private async Task<Office?> GetOfficeIfExists(string officeId)
+        {
+            Office? office = await _redisService.GetValueAsync(officeId);
+
+            if (office != null) return office;
+            
+            Console.WriteLine("-----[LA OFICINA NO EXISTE EN EL REDIS]-----");
+            
+            if (!await _officeRepository.ExistById(officeId)) return null;
+            
+            Console.WriteLine("-----[LA OFICINA EXISTE EN EL REPO PERO NO EN EL REDIS]-----");
+            
+            office = await _officeRepository.GetOffice(officeId);
+            await _redisService.SetValueAsync(officeId, office);
+            
+            return office;
 
         }
 

@@ -18,8 +18,6 @@ namespace Commercial_Office.Infraestructure
             _DbContext = context;
 
             _Offices = new Dictionary<string, Office>();
-
- 
         }
 
         public async Task Add(Office office)
@@ -52,6 +50,12 @@ namespace Commercial_Office.Infraestructure
             return await _DbContext.Offices
             .Include(o => o.AttentionPlaceList)
             .ToListAsync();
+        }
+
+        public async Task<bool> ExistById(string officeId)
+        {
+            return _DbContext.Offices != null && await _DbContext.Offices
+                .AnyAsync(office => office.Identificator == officeId);
         }
 
     }
