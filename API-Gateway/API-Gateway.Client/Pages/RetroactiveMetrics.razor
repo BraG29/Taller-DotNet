@@ -1,0 +1,151 @@
+﻿@using API_Gateway_Client.DTOs;
+@inject HttpClient Http
+@inject IJSRuntime JS
+@page "/retroactiveMetrics/{officeId}"
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+    <h3>RetroactiveMetrics</h3>
+
+    <h3>Tiempo de Espera Promedio</h3>
+
+    <style>
+
+        .Test {
+        width: 60vw;
+        height: 30vh;
+        }
+
+
+    </style>
+
+    <button @onclick="() => OnIntervalSelected(0)">Last Week</button>
+    <button @onclick="() => OnIntervalSelected(1)">Last Month</button>
+    <button @onclick="() => OnIntervalSelected(2)">Last Year</button>
+    <button @onclick="HandleButtonClick">Click me</button>
+
+    <div id="Test">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        function createChart(canvasId, labels, values, interval) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+
+            new Chart(ctx, {
+                type: 'bar', //tipo de barras
+                data: {
+                    labels: labels,
+                    datasets: [{
+                    label: 'Average Wait Time (seconds)',
+                    data: values,
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit:  interval === 0 ? 'day' : interval === 1 ? 'week' : 'month',
+                            parser: 'yyyy-MM-dd', // Formato de las fechas enviadas
+                            displayFormats: {
+                                day: 'MMM d',   // Formato para días
+                                week: 'MMM d',  // Formato para semanas
+                                month: 'MMM yyyy' // Formato para meses
+                            }
+                        },
+                        ticks: {
+                         source: 'data', // Usa las fechas tal cual las proporcionaste
+                        }
+                    },
+                        y: {
+                        beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+    </script>
+</body>
+
+@code {
+
+    [Parameter]
+    public string officeId { get; set; }
+    private long selectedInterval = 0; // inicializo intervalo ultima semana por defecto.
+
+    private List<ProcedureMetricsDTO> metricsDTOs = new();
+
+    private void HandleButtonClick()
+    {
+        Console.WriteLine("Button clicked!");
+    }
+
+    //Funcion para seleccionar intervalo
+    private async Task OnIntervalSelected(int interval)
+    {
+        Console.WriteLine("Aprete el boton intervalo: " + interval );
+        selectedInterval = interval;
+        await LoadDataAsync(selectedInterval);
+    }
+
+    private async Task LoadDataAsync(long interval)
+    {
+        try
+        {
+            string endpoint = $"http://localhost:5232/quality-management-api/getRetroactiveMetrics/{officeId}/{interval}";
+            metricsDTOs = await Http.GetFromJsonAsync<List<ProcedureMetricsDTO>>(endpoint);
+
+            if (!metricsDTOs.Any())
+            {
+                Console.WriteLine("No se recibieron métricas.");
+            }
+
+            Console.WriteLine("Cargue metricas");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar métricas: {ex.Message}");
+        }
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadDataAsync(selectedInterval);
+
+            if (metricsDTOs.Any())
+            {
+                var labels = metricsDTOs.Select(d => d.IntervalDate.ToString("yyyy-MM-dd")).ToList();
+
+                var waitTimes = metricsDTOs.Select(d =>
+                {
+                TimeSpan parsedTimeSpan;
+                if (TimeSpan.TryParse(d.ProcedureAverageWaitTime, out parsedTimeSpan))
+                {
+                    return parsedTimeSpan.TotalSeconds;
+                }
+                return 0;
+                }).ToList();
+
+                await JS.InvokeVoidAsync("createChart", "myChart", labels, waitTimes, selectedInterval);
+            }
+            else
+            {
+                Console.WriteLine("Data no disponible");
+            }
+        }
+    }
+
+    
+}
+
