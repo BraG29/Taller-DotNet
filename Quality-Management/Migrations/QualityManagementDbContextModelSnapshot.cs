@@ -60,10 +60,13 @@ namespace Quality_Management.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("wait_time");
 
+<<<<<<< Updated upstream
                     b.Property<string>("office")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+=======
+>>>>>>> Stashed changes
                     b.HasKey("Id");
 
                     b.HasIndex("office");
