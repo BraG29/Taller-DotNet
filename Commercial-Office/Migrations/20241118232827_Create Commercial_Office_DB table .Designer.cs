@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Commercial_Office.Migrations
 {
     [DbContext(typeof(CommercialOfficeDbContext))]
-    [Migration("20241105191313_Create Office table")]
-    partial class CreateOfficetable
+    [Migration("20241118232827_Create Commercial_Office_DB table ")]
+    partial class CreateCommercial_Office_DBtable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

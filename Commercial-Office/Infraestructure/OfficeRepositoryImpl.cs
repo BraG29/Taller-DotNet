@@ -52,5 +52,11 @@ namespace Commercial_Office.Infraestructure
             .ToListAsync();
         }
 
+        public async Task<bool> ExistById(string officeId)
+        {
+            return _DbContext.Offices != null && await _DbContext.Offices
+                .AnyAsync(office => office.Identificator == officeId);
+        }
+
     }
 }
