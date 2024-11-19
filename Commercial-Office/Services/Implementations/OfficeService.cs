@@ -29,18 +29,17 @@ namespace Commercial_Office.Services.Implementations
         private readonly ILogger<OfficeService> _logger;
         private readonly QualityManagementService  _qualityManagementService;
         private readonly HubConnection _hubApiGatewayConnection;
-        private readonly HubService _hubService;
-        private readonly IHubContext<CommercialOfficeHub> _hub;
         private readonly IOfficeQueueService _queueService;
+        private readonly IRedisService _redisService;
+
 
         public OfficeService(IOfficeRepository officeRepository,
                             ILogger<OfficeService> logger,
-                            HubService service,
-                            IHubContext<CommercialOfficeHub> hub,
                             QualityManagementService qualityManagementService,
                             IOfficeQueueService queueService,
-                            IHttpMessageHandlerFactory msgFactory){
-
+                            IHttpMessageHandlerFactory msgFactory,
+                            IRedisService redisService)
+        {
             _officeRepository = officeRepository;
             _logger = logger;
             _qualityManagementService = qualityManagementService;
@@ -52,14 +51,23 @@ namespace Commercial_Office.Services.Implementations
 
             //and we build the connection
             _hubApiGatewayConnection = hubConnection.Build();
+
+            _queueService = queueService;
+            _redisService = redisService;
         }
 
         public async Task CreateOffice(OfficeDTO officeDTO)
         {
+            /*
+             * llamar a un async := o
+             *  -----
+             * -----
+             * leo o
+             *
+             */
 
             if (officeDTO.Identificator != null)
             {
-
                 if (await _officeRepository.GetOffice(officeDTO.Identificator) != null)
                 {
                     throw new ArgumentException($"Oficina ya existe");
@@ -80,7 +88,8 @@ namespace Commercial_Office.Services.Implementations
                             throw new ArgumentException($"Numero de puesto no puede ser menor a 0");
                         }
 
-                        AttentionPlace attentionPlace = new AttentionPlace(0, place.Number, true, 0, officeDTO.Identificator);
+                        // AttentionPlace attentionPlace = new AttentionPlace(0, place.Number, true, 0, officeDTO.Identificator);
+                        AttentionPlace attentionPlace = new AttentionPlace(0, place.Number, true);
                         attentionPlaces.Add(attentionPlace);
                     }
                 }
@@ -138,7 +147,8 @@ namespace Commercial_Office.Services.Implementations
                     else
                     {
                         //LLamaria a AddDB
-                        office.AttentionPlaceList.Add(new AttentionPlace(0, placeDTO.Number, placeDTO.Available, 0, officeId));
+                        // office.AttentionPlaceList.Add(new AttentionPlace(0, placeDTO.Number, placeDTO.Available, 0, officeId));
+                        office.AttentionPlaceList.Add(new AttentionPlace(0, placeDTO.Number, placeDTO.Available));
 
                         await _officeRepository.Update(office);
 
@@ -264,8 +274,7 @@ namespace Commercial_Office.Services.Implementations
                 throw new ArgumentNullException($"Identificadores invalidos o vacios");
             }
 
-            Office office = await _officeRepository.GetOffice(officeId);
-            if (office == null)
+            if (await GetOfficeIfExists(officeId) == null)
             {
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
             }
@@ -289,11 +298,12 @@ namespace Commercial_Office.Services.Implementations
                 throw new ArgumentException($"No se aceptan números menores a 0");
             }
 
-            Office office = await _officeRepository.GetOffice(officeId);
+            Office? office = await GetOfficeIfExists(officeId);
             if (office == null)
             {
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
             }
+
 
             try
             {
@@ -301,7 +311,7 @@ namespace Commercial_Office.Services.Implementations
                 AttentionPlace place = office.AttentionPlaceList
                     .First(place => place.Number == placeNumber);
 
-                if (!place.IsAvailable)//si el puesto esta ocupado
+                if (!place.IsAvailable) //si el puesto esta ocupado
                 {
                     throw new ArgumentException($"El puesto esta ocupado");
                 }
@@ -334,25 +344,28 @@ namespace Commercial_Office.Services.Implementations
 
                     place.ProcedureId = procedureId;
 
+                    await _redisService.SetValueAsync(officeId, office);
 
-                    try{//if the conecction to SignalR has been suspended/killed
+                    try
+                    {//if the conecction to SignalR has been suspended/killed
 
-                        if (_hubApiGatewayConnection.State != HubConnectionState.Connected){
+                        if (_hubApiGatewayConnection.State != HubConnectionState.Connected)
+                        {
 
                             await _hubApiGatewayConnection.StartAsync();//try to reconenct
                             await _hubApiGatewayConnection.InvokeAsync("RefreshMonitor", userId.Item, place.Number, officeId);//we send the data
                         }
-                        else {
+                        else
+                        {
                             await _hubApiGatewayConnection.InvokeAsync("RefreshMonitor", userId.Item, place.Number, officeId);//we send data, without reconnecting
                         }
 
                     }
-                    catch (Exception e){
+                    catch (Exception e)
+                    {
 
                         _logger.LogInformation("YO SOY EL OfficeService y acabo de fallar al pasarla la data por SignalR client a HubConnections" + e.Message.ToString());
                     }
-
-                    await _officeRepository.Update(office);
 
                 }
                 else
@@ -364,6 +377,10 @@ namespace Commercial_Office.Services.Implementations
             catch (InvalidOperationException)
             {
                 throw new InvalidOperationException($"No existe el puesto");
+            }
+            catch (NullReferenceException e)
+            {
+                Console.WriteLine("El Redis devolvio un valor nulo");
             }
 
         }
@@ -381,8 +398,8 @@ namespace Commercial_Office.Services.Implementations
             {
                 throw new ArgumentException($"No se aceptan números menores a 0");
             }
-
-            Office office = await _officeRepository.GetOffice(officeId);
+            
+            Office? office = await GetOfficeIfExists(officeId);
             if (office == null)
             {
                 throw new KeyNotFoundException($"No hay una oficina con ese identificador.");
@@ -390,6 +407,7 @@ namespace Commercial_Office.Services.Implementations
 
             try
             {
+                
                 //obtener el puesto que coincida con el numero
                 AttentionPlace place = office.AttentionPlaceList
                     .First(place => place.Number == placeNumber);
@@ -403,27 +421,30 @@ namespace Commercial_Office.Services.Implementations
                     Console.WriteLine("Antes de  tirarle al servicio");
                     await _qualityManagementService.FinishProcedure(place.ProcedureId, DateTime.Now);
 
+                   
+
+                    place.ProcedureId = 0;
+                    
+                    await _redisService.SetValueAsync(officeId, office);
+
                     try
                     {//if the conecction to SignalR has been suspended/killed
 
-                        if (_hubApiGatewayConnection.State != HubConnectionState.Connected){
+                        if (_hubApiGatewayConnection.State != HubConnectionState.Connected)
+                        {
                             await _hubApiGatewayConnection.StartAsync();//try to reconenct
                             await _hubApiGatewayConnection.InvokeAsync("RefreshMonitor", "remove", place.Number, officeId);
                         }
-                        else{
+                        else
+                        {
                             await _hubApiGatewayConnection.InvokeAsync("RefreshMonitor", "remove", place.Number, officeId);
                         }
 
                     }
                     catch (Exception e)
                     {
-
                         _logger.LogInformation("YO SOY EL OfficeService y acabo de fallar al pasarla la data por SignalR client a HubConnections" + e.Message.ToString());
                     }
-
-                    place.ProcedureId = 0;
-                    
-                    await _officeRepository.Update(office);
                 }
                 else //Si el puesto ya se encuentra libre
                 {
@@ -434,6 +455,30 @@ namespace Commercial_Office.Services.Implementations
             {
                throw new InvalidOperationException($"No existe el puesto" + ex.ToString());
             }
+            catch (NullReferenceException e)
+            {
+                Console.WriteLine("El Redis devolvio un valor nulo");
+            }
+
+
+        }
+
+        private async Task<Office?> GetOfficeIfExists(string officeId)
+        {
+            Office? office = await _redisService.GetValueAsync(officeId);
+
+            if (office != null) return office;
+            
+            Console.WriteLine("-----[LA OFICINA NO EXISTE EN EL REDIS]-----");
+            
+            if (!await _officeRepository.ExistById(officeId)) return null;
+            
+            Console.WriteLine("-----[LA OFICINA EXISTE EN EL REPO PERO NO EN EL REDIS]-----");
+            
+            office = await _officeRepository.GetOffice(officeId);
+            await _redisService.SetValueAsync(officeId, office);
+            
+            return office;
 
         }
 

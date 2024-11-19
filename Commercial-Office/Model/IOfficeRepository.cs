@@ -10,6 +10,7 @@ namespace Commercial_Office.Model
         public Task Delete(Office office);
         public Task<Office> GetOffice(string id);
         public Task<IList<Office>> GetAll();
+        public Task<bool> ExistById(string officeId);
 
     }
 }
