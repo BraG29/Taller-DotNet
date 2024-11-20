@@ -21,6 +21,7 @@
         <ProjectReference Include="..\API-Gateway\API-Gateway\API-Gateway.csproj"/>
         <ProjectReference Include="..\Commercial-Office\Commercial-Office.csproj"/>
         <ProjectReference Include="..\Quality-Management\Quality-Management.csproj"/>
-    </ItemGroup>
+		<ProjectReference Include="..\API-Gateway\API-Gateway.Client\API-Gateway.Client.csproj"/>
+	</ItemGroup>
 
 </Project>

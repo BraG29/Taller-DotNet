@@ -27,6 +27,8 @@
 
 @code{
 
+    private HubConnection _connection;
+
     static readonly HttpClient client = new HttpClient();
 
     IList<OfficeDTO> offices = new List<OfficeDTO>();
@@ -40,19 +42,14 @@
 
     void ButtonClicked()
     {
-        //TODO: chekc if I can find a way of routing this page dinamically :7
-        //Console.WriteLine(NavigationManager.GetUriWithQueryParameter("clientMonitor", offices[0].Identificator));
-
         ReloadOfficeList();
-        //Console.WriteLine(NavigationManager.ToAbsoluteUri("/monitorClient/" + offices[0].Identificator));
-
     }
 
     async void ReloadOfficeList()
     {
         //conseguimos todas las oficinas desde CommercialOffice
-        try
-        {
+        try{
+            //TODO: pasar este request hardcodeado al hub del API-Gateway y conectarlo con service discovery Aspire
             string response = await client.GetStringAsync("http://localhost:5030/office/getAllOffices");
 
             offices = JsonConvert.DeserializeObject<List<OfficeDTO>>(response);

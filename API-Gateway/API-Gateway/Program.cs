@@ -1,5 +1,6 @@
 using API_Gateway.Client.Pages;
 using API_Gateway.Components;
+using API_Gateway.Hub;
 using API_Gateway.Services;
 using Radzen;
 using ServiceDefaults;
@@ -16,8 +17,19 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddRadzenComponents();
 
+
+//añadimos que vamos a utilizar SignalR
+builder.Services.AddSignalR();
+
+//hacemos singleton el ConnectionHub
+builder.Services.AddSingleton<ConnectionHub>();
+
+
 builder.Services.AddHttpClient<CommercialOfficeService>(static client =>
 {
+    /*
+ * El nombre usado para el servicio fue el que previamente le configuramos en la app host
+ */
     client.BaseAddress = new("http://commercial-office");
 });
 
@@ -30,6 +42,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 
 var app = builder.Build();
 
@@ -47,6 +60,8 @@ else
     app.UseHsts();
 }
 
+//indicamos que con esta URL se podría conectar al HUB.
+app.MapHub<ConnectionHub>("/connection");
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
