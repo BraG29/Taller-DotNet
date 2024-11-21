@@ -99,6 +99,7 @@
 
 
     <!-- Este codigo no se borra xd
+        al tke mi rey
     <button class="btn btn-primary me-2" @onclick="() => OnIntervalSelected(0)" @onmouseover="ShowSpan" @onmouseout="HideSpan">
         Ultima semana
         <span style="display: @(isSpanVisible ? "inline" : "none");"> Organiza datos de los ultimos 7 dias </span>
@@ -231,10 +232,12 @@
 
     private async Task LoadDataAsync(long interval)
     {
-        try
+        try //this is where I should meter mano para service discovery
         {
-            string endpoint = $"http://localhost:5232/quality-management-api/getRetroactiveMetrics/{officeId}/{interval}";
+            string endpoint = $"http://localhost:5283/getRetroactiveMetrics/{officeId}/{interval}";
+
             metricsDTOs = await Http.GetFromJsonAsync<List<ProcedureMetricsDTO>>(endpoint);
+            //await Http.GetFromJsonAsync<List<ProcedureMetricsDTO>>(endpoint);
 
             if (!metricsDTOs.Any())
             {

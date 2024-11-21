@@ -26,33 +26,28 @@
 <RadzenButton Click="@ButtonClicked" Text="Actualizar Lista de Monitores"></RadzenButton>
 
 @code{
-
+    //we initialize the few things we're gonna use most importantly the HubConnection
     private HubConnection _connection;
-
     static readonly HttpClient client = new HttpClient();
-
-    IList<OfficeDTO> offices = new List<OfficeDTO>();
+    IList<ClientOfficeDTO> offices = new List<ClientOfficeDTO>();
 
     //Cuando se inicializa el componente:
-    protected override async Task OnInitializedAsync()
-    {
-        ReloadOfficeList();
-
-    }
-
-    void ButtonClicked()
-    {
+    protected override async Task OnInitializedAsync(){
         ReloadOfficeList();
     }
 
-    async void ReloadOfficeList()
-    {
+    //function that gets called when the only buttion in the page is pressed down
+    void ButtonClicked(){
+        ReloadOfficeList();
+    }
+
+    async void ReloadOfficeList(){
         //conseguimos todas las oficinas desde CommercialOffice
         try{
-            //TODO: pasar este request hardcodeado al hub del API-Gateway y conectarlo con service discovery Aspire
-            string response = await client.GetStringAsync("http://localhost:5030/office/getAllOffices");
+            //we ask the service McThingy from the API-Gateway to resolve the service discovery endpoint for us
+            string response = await client.GetStringAsync("http://localhost:5283/getAllOffices");
 
-            offices = JsonConvert.DeserializeObject<List<OfficeDTO>>(response);
+            offices = JsonConvert.DeserializeObject<List<ClientOfficeDTO>>(response);
 
             //Le avisamos al componente que se re-renderize dado que su estádo ha cambiado
             InvokeAsync(StateHasChanged);
