@@ -1,0 +1,78 @@
+﻿@page "/clientRegister/{officeId}"
+
+<RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Orientation="Orientation.Horizontal">
+   
+    <RadzenCard Variant="Variant.Filled" class="rz-p-0" Style="width: 50%; overflow: hidden;" >
+
+        <RadzenStack AlignItems="AlignItems.Center" Style="width: 100%;">
+
+        
+
+            <RadzenText TextStyle="TextStyle.H3"> Registro de puesto</RadzenText>
+
+            <RadzenTemplateForm TItem="Model" Data="@client" Submit="@OnSubmit">
+                <RadzenRow>
+
+                    <RadzenFormField Text="Ingrese su Cedula" Variant="Variant.Filled" Style="width: 100%;">
+
+                            <RadzenTextBox Name="CI" @bind-Value="@client.Ci" />
+                        <RadzenRequiredValidator Component="CI"  Text="Porfavor ingrese la Cedula" Popup="true" Style="position: absolute" />
+
+                    </RadzenFormField>
+
+              
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenButton Click="@ButtonClicked" ButtonType="ButtonType.Submit">Registrarse</RadzenButton>
+                </RadzenRow>
+
+            </RadzenTemplateForm>
+        </RadzenStack>
+    </RadzenCard>
+
+</RadzenStack>
+
+
+@code {
+    [Parameter]
+    public string OfficeId { get; set; }
+
+    static readonly HttpClient http = new HttpClient();
+
+    class Model{
+        public string Ci { get; set; }
+    }
+
+    Model client = new Model();
+
+
+    protected override async Task OnInitializedAsync(){
+
+
+
+    }
+
+
+
+    public async Task ButtonClicked() {
+
+        Console.WriteLine("I am ClientRegister and my button has been pressed!");
+        Console.WriteLine("Cedula del usuario: " + client.Ci);
+    }
+
+    async void OnSubmit(){
+
+        Console.WriteLine("I am on the Submit function");
+        Console.WriteLine(client.Ci);
+
+        try{
+
+            await http.PutAsync("http://localhost:5283/registerUser", new StringContent(client.Ci + OfficeId));
+            Console.WriteLine("I am the ClientRegister page, and I just called Api-Gateway");
+        }
+        catch(Exception e){
+            Console.WriteLine("I am the ClientRegister page, and I got error: " + e.Message);
+        }
+    }
+}
