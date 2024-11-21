@@ -28,6 +28,13 @@
                 </RadzenRow>
 
             </RadzenTemplateForm>
+            <RadzenAlert @bind-Visible="correctAlertVisible">
+                Se registró el usuario correctamente!
+            </RadzenAlert>
+
+            <RadzenAlert @bind-Visible="wrongAlertVisible" AlertStyle="AlertStyle.Danger">
+                No se ha podido registrar el usuario.
+            </RadzenAlert>
         </RadzenStack>
     </RadzenCard>
 
@@ -47,13 +54,6 @@
     Model client = new Model();
 
 
-    protected override async Task OnInitializedAsync(){
-
-
-
-    }
-
-
 
     public async Task ButtonClicked() {
 
@@ -67,12 +67,37 @@
         Console.WriteLine(client.Ci);
 
         try{
+            Console.WriteLine("dentro del Submit tengo acceso a los siguientes datos:" + client.Ci +" / "+OfficeId);
 
-            await http.PutAsync("http://localhost:5283/registerUser", new StringContent(client.Ci + OfficeId));
+            var result = await http.GetAsync("http://localhost:5283/registerUser/" + client.Ci + "/" + OfficeId);
+
+            if (result.StatusCode.Equals(System.Net.HttpStatusCode.OK)){
+                SwapAlertVisibility(true);
+            }
+            else{
+                SwapAlertVisibility(false);
+            }
+            InvokeAsync(StateHasChanged);
             Console.WriteLine("I am the ClientRegister page, and I just called Api-Gateway");
         }
         catch(Exception e){
             Console.WriteLine("I am the ClientRegister page, and I got error: " + e.Message);
+        }
+    }
+
+
+    //Lógica del Alert
+    bool correctAlertVisible = false;
+    bool wrongAlertVisible = false;
+
+
+    void SwapAlertVisibility(bool correct)
+    {
+        if (correct){
+            correctAlertVisible = !correctAlertVisible;
+        }
+        else{
+            wrongAlertVisible = !wrongAlertVisible;
         }
     }
 }

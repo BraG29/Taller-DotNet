@@ -2,6 +2,7 @@
 using API_Gateway_Client.DTOs;
 using API_Gateway.Services;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API_Gateway.Controllers;
 
@@ -62,11 +63,12 @@ public class ApiGatewayController : Controller
     }
 
 
-    [HttpPut]
-    [Route("/registerUser")]
-    public async Task<HttpResponseMessage> RegisterUserCommercial(StringContent data){
+    [HttpGet]
+    [Route("/registerUser/{userCi}/{officeId}")]
+    public async Task<HttpResponseMessage> RegisterUser(string userCi, string officeId){
 
-        Console.WriteLine("I am Api-Gateway Controller and I got String Content: " +  data.ReadAsStringAsync());
-        return await _commercialOfficeService.CallRegisterUser(data);
+        //Console.WriteLine("I am Api-Gateway Controller and I got String Content: " +  data.ReadAsStringAsync());
+        Console.WriteLine("I am Api-Gateway Controller and I got String Content: " + userCi +" / "+ officeId);
+        return await _commercialOfficeService.CallRegisterUser(userCi,officeId);
     }
 }
