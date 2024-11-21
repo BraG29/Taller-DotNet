@@ -1,5 +1,7 @@
 ﻿using API_Gateway.DTOS;
 using API_Gateway.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API_Gateway.Controllers;
@@ -10,14 +12,24 @@ public class ApiGatewayController : Controller
 {
     private readonly CommercialOfficeService _commercialOfficeService;
     private readonly QualityManagementService _qualityManagementService;
+    private readonly AuthenticationService _authenticationService;
 
-    public ApiGatewayController(CommercialOfficeService commercialOfficeService, QualityManagementService qualityManagementService)
+    public ApiGatewayController(CommercialOfficeService commercialOfficeService, QualityManagementService qualityManagementService, AuthenticationService authenticationService)
     {
         _commercialOfficeService = commercialOfficeService;
         _qualityManagementService = qualityManagementService;
+        _authenticationService = authenticationService;
     }
 
     [HttpPost]
+    [Route("login")]
+    public async Task<ActionResult> Login([FromBody] LoginRequest request)
+    {
+        return Ok(await _authenticationService.CallLogin(request));
+    }
+
+    [HttpPost]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN")]
     [Route("/create-office")]
     public async Task<ActionResult> CreateOffice([FromBody] OfficeDTO office)
     {
