@@ -20,6 +20,7 @@
         <ProjectReference Include="..\API-Gateway\API-Gateway\API-Gateway.csproj"/>
         <ProjectReference Include="..\Commercial-Office\Commercial-Office.csproj"/>
         <ProjectReference Include="..\Quality-Management\Quality-Management.csproj"/>
+        <ProjectReference Include="..\Authentication\Authentication.csproj"/>
     </ItemGroup>
 
 </Project>
