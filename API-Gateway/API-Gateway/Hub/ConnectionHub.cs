@@ -20,6 +20,8 @@
 
         }
 
+        #region MonitorClient~
+
         //this function is called in OfficeService thru SignalR client
         public async Task RefreshMonitor(string userId, long place, string officeId){
 
@@ -29,7 +31,7 @@
             _logger.LogInformation("Soy RefreshMonitor dentro de ConnectionHub, me acaba de llegar la data para avisarle a ClientMonitor");
             _logger.LogInformation(userId + place + officeId);
         }
-
+        #endregion
 
         #region RealTime Metrics
 
