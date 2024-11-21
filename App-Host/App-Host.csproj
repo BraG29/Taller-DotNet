@@ -12,7 +12,6 @@
     <ItemGroup>
         <PackageReference Include="Aspire.Hosting.AppHost" Version="8.2.2"/>
         <PackageReference Include="Aspire.Hosting.Redis" Version="8.2.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.10"/>
         <PackageReference Include="Microsoft.Identity.Web" Version="3.2.2"/>
         <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="3.2.2"/>
@@ -22,6 +21,6 @@
         <ProjectReference Include="..\Commercial-Office\Commercial-Office.csproj"/>
         <ProjectReference Include="..\Quality-Management\Quality-Management.csproj"/>
 		<ProjectReference Include="..\API-Gateway\API-Gateway.Client\API-Gateway.Client.csproj"/>
-	</ItemGroup>
-
+        <ProjectReference Include="..\Authentication\Authentication.csproj"/>
+    </ItemGroup>
 </Project>
