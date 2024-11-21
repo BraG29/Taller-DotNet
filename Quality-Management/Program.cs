@@ -6,13 +6,18 @@ using Quality_Management.Infraestructure;
 using Quality_Management.Services;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.AddServiceDefaults();
 
 // Redis Client
 builder.AddRedisClient(connectionName: "quality-management-cache");
+
+// Empty HttpClient xd
+builder.Services.AddHttpClient<HttpClientExample>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -37,8 +42,7 @@ builder.Services.AddScoped<IRealTimeMetricsService, RealTimeMetricsService>();
 builder.Services.AddScoped<IProcedureRepository, ProcedureRepositoryImpl>();
 builder.Services.AddScoped<IProcedureService, ProcedureServiceImpl>();
 builder.Services.AddScoped<IRedisServer, RedisService>();
-
-builder.Services.AddHttpClient<IRealTimeMetricsService, RealTimeMetricsService>();
+builder.Services.AddScoped<IRealTimeMetricsService, RealTimeMetricsService>();
 
 builder.Services.AddSignalR();
 
