@@ -13,9 +13,9 @@ var qmCache = builder.AddRedis("quality-management-cache")
 
 var coCache = builder.AddRedis("commercial-office-cache");
 
+var authentication = builder.AddProject<Projects.Authentication>("auth-service");
 
-var qualityManagement = builder
-    .AddProject<Projects.Quality_Management>("quality-management")
+var qualityManagement = builder.AddProject<Projects.Quality_Management>("quality-management")
     .WithReference(qmCache)
     .WithReference(apiGateway);
 
@@ -24,10 +24,9 @@ var commercialOffice = builder.AddProject<Commercial_Office>("commercial-office"
     .WithReference(apiGateway)
     .WithReference(coCache);
 
-
 apiGateway.WithReference(qualityManagement);
 apiGateway.WithReference(commercialOffice);
-
+apiGateway.WithReference(authentication);
 
 
 var app = builder.Build();

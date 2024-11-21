@@ -1,6 +1,8 @@
 ﻿using API_Gateway.DTOS;
 using API_Gateway_Client.DTOs;
 using API_Gateway.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API_Gateway.Controllers;
@@ -11,14 +13,50 @@ public class ApiGatewayController : Controller
 {
     private readonly CommercialOfficeService _commercialOfficeService;
     private readonly QualityManagementService _qualityManagementService;
+    private readonly AuthenticationService _authenticationService;
 
-    public ApiGatewayController(CommercialOfficeService commercialOfficeService, QualityManagementService qualityManagementService)
+    public ApiGatewayController(CommercialOfficeService commercialOfficeService,
+        QualityManagementService qualityManagementService,
+        AuthenticationService authenticationService)
     {
         _commercialOfficeService = commercialOfficeService;
         _qualityManagementService = qualityManagementService;
+        _authenticationService = authenticationService;
     }
 
     [HttpPost]
+    [Route("login")]
+    public async Task<ActionResult> Login([FromBody] LoginRequest request)
+    {
+
+        try
+        {
+            var respose = await _authenticationService.CallLogin(request);
+            return Ok(respose);
+        }
+        catch (ArgumentException e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpPost]
+    [Route("register")]
+    public async Task<IActionResult> SignUp([FromBody] RegisterRequest request)
+    {
+        try
+        {
+            var response = await _authenticationService.CallRegister(request);
+            return Ok(response);
+        }
+        catch (ArgumentException e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
+    [HttpPost]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN")]
     [Route("/create-office")]
     public async Task<ActionResult> CreateOffice([FromBody] OfficeDTO office)
     {
