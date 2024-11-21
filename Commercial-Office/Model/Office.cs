@@ -13,9 +13,9 @@ namespace Commercial_Office.Model
 
         public IList<AttentionPlace> AttentionPlaceList { get; set; }
 
-        public Office() { 
+        public Office() 
+        { 
             
-            AttentionPlaceList = new List<AttentionPlace>();
         }
 
         public Office (string identificator, IList<AttentionPlace> attentionPlaceList)

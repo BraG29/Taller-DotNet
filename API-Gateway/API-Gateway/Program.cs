@@ -1,6 +1,7 @@
 using System.Text;
 using API_Gateway.Client.Pages;
 using API_Gateway.Components;
+using API_Gateway.Hub;
 using API_Gateway.Services;
 using Microsoft.IdentityModel.Tokens;
 using Radzen;
@@ -17,25 +18,17 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddRadzenComponents();
 
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
-    {
-        options.Authority = ""; //TODO: colocar url de Authenticaion Service
-        options.RequireHttpsMetadata = true;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = "", //TODO: colocar url de Authenticaion Service
-            ValidateAudience = true,
-            ValidAudience = "api-gateway",
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey("8c6f1f04-f373-4391-a3b9-98d2a06b42f3"u8.ToArray()) 
-        };
-    });
+//a�adimos que vamos a utilizar SignalR
+builder.Services.AddSignalR();
+
+//hacemos singleton el ConnectionHub
+builder.Services.AddSingleton<ConnectionHub>();
 
 builder.Services.AddHttpClient<CommercialOfficeService>(static client =>
 {
+    /*
+ * El nombre usado para el servicio fue el que previamente le configuramos en la app host
+ */
     client.BaseAddress = new("http://commercial-office");
 });
 
@@ -48,6 +41,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 
 var app = builder.Build();
 
@@ -65,6 +59,8 @@ else
     app.UseHsts();
 }
 
+//indicamos que con esta URL se podr�a conectar al HUB.
+app.MapHub<ConnectionHub>("/connection");
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();

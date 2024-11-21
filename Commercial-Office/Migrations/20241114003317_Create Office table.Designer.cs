@@ -3,6 +3,7 @@ using Commercial_Office.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Commercial_Office.Migrations
 {
     [DbContext(typeof(CommercialOfficeDbContext))]
-    partial class CommercialOfficeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241114003317_Create Office table")]
+    partial class CreateOfficetable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -14,24 +14,24 @@ namespace Commercial_Office.Services.Implementations
         /// <param name="officeId"> Identificador de la oficina </param>
         /// <param name="placeNumber"> Numero de puesto de la oficina donde ocurre el tramite</param>
         /// <param name="processStartDate">Fecha en la que se comienza el tramite</param>
-        public async Task<string> StartProcedure(string officeId, long placeNumber, DateTime processStartDate)
+        /// <param name="waitTime">Tiempo de espera en la cola </param>
+        public async Task<string> StartProcedure(string officeId, long placeNumber, DateTime processStartDate, string waitTime)
         {
 
             var data = new
             {
                 OfficeId = officeId,
                 PlaceNumber = placeNumber,
-                procedureStart = processStartDate
+                procedureStart = processStartDate,
+                WaitTime = waitTime
             };
 
             var response = await httpClient
             .PostAsJsonAsync("quality-management-api/startProcedure", data);
 
             string procedureId = await response.Content.ReadAsStringAsync();
-
             return procedureId;
-            //TODO: Ver este tema con los gurises
-            //memoryCache.Set("CurrentProcedureId", procedureId, TimeSpan.FromMinutes(5));
+
         }
 
         /// <summary>
@@ -41,19 +41,7 @@ namespace Commercial_Office.Services.Implementations
         /// <param name="procedureId"> Identificador del tramite </param>
         public async Task FinishProcedure(long procedureId, DateTime procedureEnd)
         {
-
             await httpClient.PutAsJsonAsync($"quality-management-api/finishProcedure/{procedureId}", procedureEnd);
-            /*
-            if (memoryCache.TryGetValue("CurrentProcedureId", out var id))
-            {
-                long procedureId = Convert.ToInt64(id);
-                Console.WriteLine("\n\n hice la request \n\n ");
-            }
-            else
-            {
-                throw new InvalidOperationException("$No hay un procedimiento en curso.");
-            }*/
-
         }
 
         public async Task CallClientRegistration(string officeId)

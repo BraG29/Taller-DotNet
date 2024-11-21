@@ -20,18 +20,21 @@ namespace Quality_Management.Model
         [Column("procedure_end")] 
         public DateTime ProcedureEnd { get; set; }
 
+        [Column("wait_time")]
+        public string WaitTime { get; set; }
+
         public Procedure()
         {
             
         }
-        
-        public Procedure(long id, Office office, long placeNumber, DateTime procedureStart)
+
+        public Procedure(long id, Office office, long placeNumber, DateTime procedureStart, string waitTime)
         {
             Id = id;
             Office = office;
-            // Office = office;
             PlaceNumber = placeNumber;
             ProcedureStart = procedureStart;
+            WaitTime = waitTime;
         }
         
     }
