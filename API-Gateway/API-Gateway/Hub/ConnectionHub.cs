@@ -31,6 +31,35 @@
         }
 
 
+        #region RealTime Metrics
 
+        public async Task ClientLeavesTheQueue(string officeId, int[] queue)
+        {
+
+            Console.WriteLine("\n\nRecibiendo data y enviando data a ClientLeavesQueue\n\n");
+
+            await Clients.All.SendAsync("ClientLeavesQueue" + officeId, queue);
+
+        }
+
+        public async Task ClientEnterTheQueue(string officeId, int[] queue)
+        {
+
+            Console.WriteLine("\n\nRecibiendo data y enviando data a ClientEnterQueue\n\n");
+
+            await Clients.All.SendAsync("ClientEnterQueue" + officeId, queue);
+
+        }
+
+        public async Task PositionReleased(string officeId, int[] amount)
+        {
+
+            Console.WriteLine("\n\nRecibiendo data y enviando data a ClientLeavesQueue\n\n");
+
+            await Clients.All.SendAsync("PositionReleased" + officeId, amount);
+
+        }
+
+        #endregion
     }
 }

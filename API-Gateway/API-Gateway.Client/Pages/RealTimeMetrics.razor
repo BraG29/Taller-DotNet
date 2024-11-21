@@ -1,0 +1,142 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client;
+@page "/realTimeMetrics/{officeId}"
+<h3>Metricas en tiempo real para la oficina @officeId</h3>
+
+<body>
+    <style>
+
+        .chartContainer {
+        width: 100%; /* Ocupa todo el ancho de la columna */
+        height: 300px; /* Altura fija para las gráficas */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        margin: 10px 0; /* Espaciado entre las gráficas */
+        }
+
+        .tooltip {
+        position: relative;
+        display: inline-block;
+        }
+
+    </style>
+
+    <!--
+    <RadzenCard>
+        <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Start">
+            <RadzenColumn Width="33%">
+                <div class="chartContainer">
+                    <h3>Clientes en la cola</h3>
+                    <canvas id="usersInQueue"></canvas>
+                </div>
+            </RadzenColumn>
+
+            <RadzenColumn Width="33%">
+                <div class="chartContainer">
+                    <h3>Puestos libres</h3>
+                    <canvas id="freePositions"></canvas>
+                </div>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenCard>-->
+
+
+
+    <script>
+        /*
+        var charts = {}
+
+        function createChart(canvasId, labels, values) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'line', //tipo de barras
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: canvasId === "usersInQueue" ? 'Clientes en espera' :
+                        'Puestos libres',
+                        data: values,
+                        borderColor: 'rgb(75, 192, 192)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                            unit: 'second',
+                            },
+                            ticks: {
+                            source: 'data',
+                            }
+                        },
+                        y: {
+                            title: {
+                            display: true,
+                            text: 'Cantidad de clientes'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        */
+    </script>
+
+</body>
+
+@code {
+    [Parameter]
+    public string officeId { get; set; }
+
+    HubConnection _connection;
+
+    protected override async Task OnInitializedAsync(){
+
+        //nos conectamos el Hub del API-Gateway
+        _connection = new HubConnectionBuilder().WithUrl("http://localhost:5283/connection")
+        .WithAutomaticReconnect()
+        .Build();
+
+        try
+        {
+            await _connection.StartAsync();
+        }
+
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+
+        _connection.On<string, int[]>("ClientLeavesQueue", (officeId, queue) =>
+        {
+            Console.WriteLine($"Cliente dejó la cola de la oficina {officeId}. Cola: {string.Join(", ", queue)}");
+        });
+
+        _connection.On<string, int[]>("ClientEnterQueue", (officeId, queue) =>
+        {
+            Console.WriteLine($"Cliente entro a la cola de la oficina {officeId}. Cola: {string.Join(", ", queue)}");
+        });
+
+        _connection.On<string, int[]>("PositionReleased", (officeId, positions) =>
+        {
+            Console.WriteLine($"Se libero una posicion en la oficina: {officeId} posiciones libres: {positions.Length}");
+        });
+
+
+
+
+
+    }
+}

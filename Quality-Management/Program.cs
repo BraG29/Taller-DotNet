@@ -38,6 +38,8 @@ builder.Services.AddScoped<IProcedureRepository, ProcedureRepositoryImpl>();
 builder.Services.AddScoped<IProcedureService, ProcedureServiceImpl>();
 builder.Services.AddScoped<IRedisServer, RedisService>();
 
+builder.Services.AddHttpClient<IRealTimeMetricsService, RealTimeMetricsService>();
+
 builder.Services.AddSignalR();
 
 var connectionString = builder.Configuration.GetConnectionString("QMDatabase");
