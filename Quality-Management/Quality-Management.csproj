@@ -26,6 +26,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+        <ProjectReference Include="..\DotNET-APP.ServiceDefauts\DotNET-APP.ServiceDefauts.csproj" />
     </ItemGroup>
 
     <ItemGroup>
