@@ -15,7 +15,9 @@ public class ApiGatewayController : Controller
     private readonly QualityManagementService _qualityManagementService;
     private readonly AuthenticationService _authenticationService;
 
-    public ApiGatewayController(CommercialOfficeService commercialOfficeService, QualityManagementService qualityManagementService, AuthenticationService authenticationService)
+    public ApiGatewayController(CommercialOfficeService commercialOfficeService,
+        QualityManagementService qualityManagementService,
+        AuthenticationService authenticationService)
     {
         _commercialOfficeService = commercialOfficeService;
         _qualityManagementService = qualityManagementService;
@@ -26,9 +28,33 @@ public class ApiGatewayController : Controller
     [Route("login")]
     public async Task<ActionResult> Login([FromBody] LoginRequest request)
     {
-        return Ok(await _authenticationService.CallLogin(request));
+
+        try
+        {
+            var respose = await _authenticationService.CallLogin(request);
+            return Ok(respose);
+        }
+        catch (ArgumentException e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 
+    [HttpPost]
+    [Route("register")]
+    public async Task<IActionResult> SignUp([FromBody] RegisterRequest request)
+    {
+        try
+        {
+            var response = await _authenticationService.CallRegister(request);
+            return Ok(response);
+        }
+        catch (ArgumentException e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
     [HttpPost]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN")]
     [Route("/create-office")]

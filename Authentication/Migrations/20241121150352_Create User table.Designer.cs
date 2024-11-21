@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Authentication.Migrations
 {
     [DbContext(typeof(AuthenticationDbContext))]
-    [Migration("20241120142708_Create User table")]
+    [Migration("20241121150352_Create User table")]
     partial class CreateUsertable
     {
         /// <inheritdoc />
