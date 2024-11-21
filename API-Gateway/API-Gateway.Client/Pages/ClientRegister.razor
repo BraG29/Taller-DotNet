@@ -24,7 +24,7 @@
                 </RadzenRow>
 
                 <RadzenRow>
-                    <RadzenButton Click="@ButtonClicked" ButtonType="ButtonType.Submit">Registrarse</RadzenButton>
+                    <RadzenButton ButtonType="ButtonType.Submit">Registrarse</RadzenButton>
                 </RadzenRow>
 
             </RadzenTemplateForm>
@@ -51,25 +51,20 @@
         public string Ci { get; set; }
     }
 
+    //the model we use for getting the 
     Model client = new Model();
 
-
-
-    public async Task ButtonClicked() {
-
-        Console.WriteLine("I am ClientRegister and my button has been pressed!");
-        Console.WriteLine("Cedula del usuario: " + client.Ci);
-    }
-
+    //function that gets called onceyou press the button and the validation is complete
     async void OnSubmit(){
 
         Console.WriteLine("I am on the Submit function");
         Console.WriteLine(client.Ci);
 
+        //we try to make the HTTP call to the API-Gateway's controller
         try{
             Console.WriteLine("dentro del Submit tengo acceso a los siguientes datos:" + client.Ci +" / "+OfficeId);
 
-            var result = await http.GetAsync("http://localhost:5283/registerUser/" + client.Ci + "/" + OfficeId);
+            var result = await http.PutAsync("http://localhost:5283/registerUser/" + client.Ci + "/" + OfficeId,null);
 
             if (result.StatusCode.Equals(System.Net.HttpStatusCode.OK)){
                 SwapAlertVisibility(true);
@@ -90,7 +85,7 @@
     bool correctAlertVisible = false;
     bool wrongAlertVisible = false;
 
-
+    //function to swap the visibility of the 2 existing Alert components
     void SwapAlertVisibility(bool correct)
     {
         if (correct){

@@ -54,27 +54,28 @@ public class CommercialOfficeService(HttpClient httpClient)
 
     public async Task<HttpResponseMessage> CallRegisterUser(string userCi, string officeId) {
 
-        //Console.WriteLine("I am CommercialOfficeService and I got String Content: " + data.ReadAsStringAsync());
-        Console.WriteLine("I am CommercialOfficeService and I got String Content: " + userCi + " / " + officeId);
+        Console.WriteLine("I am CommercialOfficeService.CallRegisterUser and I got String Content: " + userCi + " / " + officeId);
 
-       
-        Model model = new Model();
-        model.UserCi = userCi;
-        model.OfficeId = officeId;
-
-        //var content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
-        //HttpContent data = new StringContent(model);
         var url = $"office/registerUser?userId={userCi}&officeId={officeId}";
 
         return await httpClient.PutAsync(url, null);
-        //return await httpClient.PutAsync($"office/registerUser", content );
-        
     }
 
-    public class Model
+    public async Task<HttpResponseMessage> CallReleasePosition(string officeId, long placeNumber){
+
+        Console.WriteLine("I am CommercialOfficeService.CallReleasePosition and I got String Content: " + officeId + " / " + placeNumber);
+
+        var url = $"office/releasePosition?officeId={officeId}&placeNumber={placeNumber}";
+
+        return await httpClient.PutAsync(url, null);
+    }
+
+    public async Task<HttpResponseMessage> CallNextUser(string officeId, long placeNumber)
     {
-        public string UserCi { get; set; }
-        public string OfficeId { get; set; }
+        Console.WriteLine("I am CommercialOfficeService.CallNextUser and I got String Content: " + officeId + " / " + placeNumber);
+
+        var url = $"office/nextUser?officeId={officeId}&placeNumber={placeNumber}";
+        return await httpClient.PutAsync(url, null);
     }
 
 }

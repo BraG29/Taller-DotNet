@@ -101,12 +101,26 @@ public class ApiGatewayController : Controller
     }
 
 
-    [HttpGet]
+    [HttpPut]
     [Route("/registerUser/{userCi}/{officeId}")]
     public async Task<HttpResponseMessage> RegisterUser(string userCi, string officeId){
 
         //Console.WriteLine("I am Api-Gateway Controller and I got String Content: " +  data.ReadAsStringAsync());
         Console.WriteLine("I am Api-Gateway Controller and I got String Content: " + userCi +" / "+ officeId);
         return await _commercialOfficeService.CallRegisterUser(userCi,officeId);
+    }
+
+    [HttpPut]
+    [Route("/releasePosition/{officeId}/{placeNumber}")]
+    public async Task<HttpResponseMessage> ReleasePosition(string officeId, long placeNumber){
+
+        return await _commercialOfficeService.CallReleasePosition(officeId, placeNumber);
+    }
+
+    [HttpPut]
+    [Route("/nextUser/{officeId}/{placeNumber}")]
+    public async Task<HttpResponseMessage> NextUser(string officeId, long placeNumber){
+
+        return await _commercialOfficeService.CallNextUser(officeId, placeNumber);
     }
 }
