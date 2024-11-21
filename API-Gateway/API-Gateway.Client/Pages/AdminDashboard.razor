@@ -35,7 +35,7 @@
             <RadzenCard>
                 <RadzenRow>
                     <RadzenColumn>
-                        <RadzenText TagName="TagName.H4" class="rz-mb-0">Nombre Oficina </RadzenText>
+                        <RadzenText TagName="TagName.H4" class="rz-mb-0">Identificador Oficina </RadzenText>
                     </RadzenColumn>
                     <RadzenColumn>
                         <RadzenTextBox @bind-Value="OfficeName" style="width: 350px;"> </RadzenTextBox>
@@ -47,7 +47,7 @@
             <RadzenCard>
                 <RadzenRow>
                     <RadzenColumn>
-                        <RadzenText TagName="TagName.H5" class="rz-mb-0">Cantidad de Puestos </RadzenText>
+                        <RadzenText TagName="TagName.H5" class="rz-mb-0">Cantidad de Puestos de Atencion </RadzenText>
                     </RadzenColumn>
                     <RadzenColumn>
                         <RadzenNumeric @bind-Value="_postCount" Min="1" Step="1" Format="N0" style="width: 350px;"> </RadzenNumeric>
@@ -110,7 +110,7 @@
                     response = await Client.PostAsJsonAsync("http://localhost:5283/create-office", new { id = OfficeName, positionsAmount = _postCount });
                     DialogService.Close();
                 });
-                await BusyDialog("Wait......");
+                await BusyDialog("Espere...");
                 
                 
                 
@@ -119,7 +119,7 @@
                     await ReloadOfficeList();
                     await DialogService.OpenAsync("Mensaje", ds =>
                         @<RadzenStack Gap="1.5rem">
-                            <p>Office created successfully!</p>
+                            <p>Oficina creada con exito</p>
                             <RadzenButton Text="Ok" Click="() => ds.Close()" Style="width: 80px;" />
                         </RadzenStack>);
                 }
@@ -130,16 +130,13 @@
                     switch (response.StatusCode)
                     {
                         case HttpStatusCode.BadRequest:
-                            errorMessage = "Invalid request. Please check your input.";
-                            break;
-                        case HttpStatusCode.NotFound:
-                            errorMessage = "Office not found.";
+                            errorMessage = "Request Invalido, por favor intente de nuevo.";
                             break;
                         case HttpStatusCode.InternalServerError:
-                            errorMessage = "Internal server error. Please try again later.";
+                            errorMessage = "Error de Servidor Interno, por favor intente mas tarde.";
                             break;
                         default:
-                            errorMessage = "An error occurred. Please try again later.";
+                            errorMessage = "Error Desconocido, por favor intente mas tarde.";
                             break;
                     }
 
