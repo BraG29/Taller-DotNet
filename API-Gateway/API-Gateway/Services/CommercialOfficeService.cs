@@ -1,5 +1,8 @@
 ﻿using System.Runtime.InteropServices.JavaScript;
 using API_Gateway.DTOS;
+using API_Gateway_Client.DTOs;
+using Microsoft.AspNetCore.Mvc;
+
 
 namespace API_Gateway.Services;
 
@@ -34,4 +37,18 @@ public class CommercialOfficeService(HttpClient httpClient)
         await httpClient.DeleteAsync($"office/deleteOffice/{officeId}");
     }
     
+    public async Task<IList<ClientOfficeDTO>> CallGetAllOffice()
+    {
+        //there supposedly shouldn't be a problem with the endpoint names of the Controller that calls this function
+        var response = await httpClient.GetFromJsonAsync<IList<ClientOfficeDTO>>($"office/getAllOffices");
+
+        return response;
+    }
+
+
+    public async Task<HttpResponseMessage> CallRegisterUser(StringContent data) {
+
+        Console.WriteLine("I am CommercialOfficeService and I got String Content: " + data.ReadAsStringAsync());
+        return await httpClient.PutAsync($"office/registerUser", data );
+    }
 }

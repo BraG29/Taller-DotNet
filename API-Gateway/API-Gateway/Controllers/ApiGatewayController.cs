@@ -1,4 +1,5 @@
 ﻿using API_Gateway.DTOS;
+using API_Gateway_Client.DTOs;
 using API_Gateway.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -55,5 +56,29 @@ public class ApiGatewayController : Controller
 
         /*TODO: Devolver diferentes status segun el error especifico*/
         return Conflict("Ha habido un error al crear la oficina");
+    }
+
+    [HttpGet]
+    [Route("/getAllOffices")]
+    public async Task<IList<ClientOfficeDTO>> GetAllOffices(){
+         
+         return await _commercialOfficeService.CallGetAllOffice();
+    }
+
+    //🐎
+    [HttpGet]
+    [Route("/getRetroactiveMetrics/{officeId}/{interval}")]
+    public async Task<IList<ProcedureMetricsDTO>> GetRetroactiveMetrics(string officeId, long interval){
+
+        return await _qualityManagementService.CallGetRetroactiveMetrics(officeId, interval);
+    }
+
+
+    [HttpPut]
+    [Route("/registerUser")]
+    public async Task<HttpResponseMessage> RegisterUserCommercial(StringContent data){
+
+        Console.WriteLine("I am Api-Gateway Controller and I got String Content: " +  data.ReadAsStringAsync());
+        return await _commercialOfficeService.CallRegisterUser(data);
     }
 }
