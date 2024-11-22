@@ -1,7 +1,9 @@
 ﻿@using API_Gateway_Client.DTOs;
-@inject HttpClient Http
 @inject IJSRuntime JS
 @page "/retroactiveMetrics/{officeId}"
+@inject HttpClient httpClient
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorage
 
 <body>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -196,9 +198,9 @@
     {
         try //this is where I should meter mano para service discovery
         {
-            string endpoint = $"http://localhost:5283/getRetroactiveMetrics/{officeId}/{interval}";
+            string endpoint = $"/getRetroactiveMetrics/{officeId}/{interval}";
 
-            metricsDTOs = await Http.GetFromJsonAsync<List<ProcedureMetricsDTO>>(endpoint);
+            metricsDTOs = await httpClient.GetFromJsonAsync<List<ProcedureMetricsDTO>>(endpoint);
             //await Http.GetFromJsonAsync<List<ProcedureMetricsDTO>>(endpoint);
 
             if (!metricsDTOs.Any())
@@ -217,6 +219,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if(! await localStorage.ContainKeyAsync("token")) navigationManager.NavigateTo("/login");
         if (firstRender)
         {
             await LoadDataAsync(selectedInterval);

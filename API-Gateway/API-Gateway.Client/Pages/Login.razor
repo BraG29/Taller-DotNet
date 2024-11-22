@@ -3,6 +3,7 @@
 @using System.Text.Json
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject NavigationManager navigationManager
+@inject HttpClient httpClient
 
 <h3>Login</h3>
 
@@ -45,9 +46,7 @@
     }
 
     Model model = new();
-
-    HttpClient httpClient = new();
-
+    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(await localStorage.ContainKeyAsync("token")) navigationManager.NavigateTo("/");

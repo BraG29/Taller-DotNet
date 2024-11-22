@@ -1,5 +1,7 @@
 ﻿@page "/clientMonitor/{office}"
 @using Microsoft.AspNetCore.SignalR.Client;
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorage
 
 
 
@@ -64,6 +66,11 @@
 
 
 @code {
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(! await localStorage.ContainKeyAsync("token")) navigationManager.NavigateTo("/login");
+    }
 
     //creamos el hub con el que nos conectaremos
     HubConnection _connection;

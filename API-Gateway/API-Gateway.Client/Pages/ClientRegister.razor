@@ -1,4 +1,7 @@
 ﻿@page "/clientRegister/{officeId}"
+@inject HttpClient httpClient
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorage
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Orientation="Orientation.Horizontal">
    
@@ -41,10 +44,14 @@
 
 
 @code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(! await localStorage.ContainKeyAsync("token")) navigationManager.NavigateTo("/login");
+    }
     [Parameter]
     public string OfficeId { get; set; }
 
-    static readonly HttpClient http = new HttpClient();
+    // static readonly HttpClient http = new HttpClient();
 
     class Model{
         public string Ci { get; set; }
@@ -63,7 +70,7 @@
         try{
             Console.WriteLine("dentro del Submit tengo acceso a los siguientes datos:" + client.Ci +" / "+OfficeId);
             
-            var result = await http.PutAsync("http://localhost:5283/registerClient/" + client.Ci + "/" + OfficeId,null);
+            var result = await httpClient.PutAsync("/registerClient/" + client.Ci + "/" + OfficeId,null);
 
             if (result.StatusCode.Equals(System.Net.HttpStatusCode.OK)){
                 SwapAlertVisibility(true);

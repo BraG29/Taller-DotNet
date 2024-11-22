@@ -3,6 +3,8 @@
 @using API_Gateway_Client.DTOs
 @using Newtonsoft.Json;
 @inject NavigationManager NavigationManager
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
 
 <PageTitle>Home</PageTitle>
 
@@ -26,9 +28,14 @@
 <RadzenButton Click="@ButtonClicked" Text="Actualizar Lista de Monitores"></RadzenButton>
 
 @code{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine("Header Auth: " + httpClient.DefaultRequestHeaders.Authorization);
+        if(! await localStorage.ContainKeyAsync("token")) NavigationManager.NavigateTo("/login");
+    }
     //we initialize the few things we're gonna use most importantly the HubConnection
     private HubConnection _connection;
-    static readonly HttpClient client = new HttpClient();
+    // static readonly HttpClient client = new HttpClient();
     IList<ClientOfficeDTO> offices = new List<ClientOfficeDTO>();
 
     //Cuando se inicializa el componente:
@@ -45,7 +52,7 @@
         //conseguimos todas las oficinas desde CommercialOffice
         try{
             //we ask the service McThingy from the API-Gateway to resolve the service discovery endpoint for us
-            string response = await client.GetStringAsync("http://localhost:5283/getAllOffices");
+            string response = await httpClient.GetStringAsync("/getAllOffices");
 
             offices = JsonConvert.DeserializeObject<List<ClientOfficeDTO>>(response);
 

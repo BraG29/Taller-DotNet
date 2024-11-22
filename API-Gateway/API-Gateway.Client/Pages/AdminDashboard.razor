@@ -4,6 +4,9 @@
 @using API_Gateway_Client.DTOs
 @using Newtonsoft.Json
 @inject DialogService DialogService
+@inject HttpClient httpClient
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorage
 
 
 @*
@@ -70,15 +73,23 @@
     
     private int _postCount = 1;
     public string? OfficeName;
-    static readonly HttpClient Client = new HttpClient();
+    // static readonly HttpClient Client = new HttpClient();
     
     private static List<ClientOfficeDTO>? _offices = new List<ClientOfficeDTO>();
+    
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(! await localStorage.ContainKeyAsync("token")) navigationManager.NavigateTo("/login", true);
+        
+    }
     
     async Task ReloadOfficeList(){
         //conseguimos todas las oficinas desde CommercialOffice
         try{
             //we ask the service McThingy from the API-Gateway to resolve the service discovery endpoint for us
-            string response = await Client.GetStringAsync("http://localhost:5283/getAllOffices");
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {await localStorage.GetItemAsStringAsync("token")}");
+            string response = await httpClient.GetStringAsync("/getAllOffices");
 
             _offices = JsonConvert.DeserializeObject<List<ClientOfficeDTO>>(response);
 
@@ -107,7 +118,8 @@
                 HttpResponseMessage? response = null;
                 InvokeAsync(async () =>
                 {
-                    response = await Client.PostAsJsonAsync("http://localhost:5283/create-office", new { id = OfficeName, positionsAmount = _postCount });
+                    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {await localStorage.GetItemAsStringAsync("token")}");
+                    response = await httpClient.PostAsJsonAsync("/create-office", new { id = OfficeName, positionsAmount = _postCount });
                     DialogService.Close();
                 });
                 await BusyDialog("Espere...");

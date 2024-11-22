@@ -1,6 +1,8 @@
 ﻿@using Microsoft.AspNetCore.SignalR.Client;
 @inject IJSRuntime JS
 @page "/realTimeMetrics/{officeId}"
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorage
 
 <h3>Metricas en tiempo real para la oficina @officeId</h3>
 
@@ -107,6 +109,11 @@
 </body>
 
 @code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(! await localStorage.ContainKeyAsync("token")) navigationManager.NavigateTo("/login");
+    }
+    
     [Parameter]
     public string officeId { get; set; }
 
