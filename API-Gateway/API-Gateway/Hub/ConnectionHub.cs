@@ -45,7 +45,7 @@
         public async Task ClientEnterTheQueue(string officeId, int[] queue)
         {
 
-            Console.WriteLine("\n\nRecibiendo data y enviando data a ClientEnterQueue\n\n");
+            Console.WriteLine($"\n\nRecibiendo data y enviando data a ClientEnterQueue\n\n {officeId}");
 
             await Clients.All.SendAsync("ClientEnterQueue" + officeId, queue);
 
