@@ -1,0 +1,187 @@
+﻿@page "/CreateOffice"
+
+@using System.Net
+@using API_Gateway_Client.DTOs
+@using Newtonsoft.Json
+@inject DialogService DialogService
+
+
+@*
+    Pay attention to the following event handlers below: Sort, Page, and Filter. They are required to help maintain state on the Item and Property being edited.
+    The 'CellClick' event handler is used to trigger the column edit mode.
+*@
+
+<RadzenCard Style="height: 500px;">
+    <RadzenDataGrid @ref="DataGrid" Data="@_offices" TItem="ClientOfficeDTO" AllowSorting="true" AllowFiltering="true"
+                    AllowVirtualization="false" Style="height: 100%; overflow: auto;">
+        <Columns>
+            <RadzenDataGridColumn TItem="ClientOfficeDTO" Property="@nameof(ClientOfficeDTO.Identificator)" Title="Identificator" />
+            <RadzenDataGridColumn TItem="ClientOfficeDTO" Title="Attention Places">
+                <Template Context="data">
+
+                    @{
+                        System.Diagnostics.Debug.Assert(data.AttentionPlaces != null, "data.AttentionPlaces != null");
+                    }
+                    @data.AttentionPlaces.Count
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+        @* Create Office--------------------------------------------------------------------------------------------------------*@
+<RadzenCard style="margin-top: 20px;">
+    <RadzenRow>
+        <RadzenColumn Size="5">
+            <RadzenCard>
+                <RadzenRow>
+                    <RadzenColumn>
+                        <RadzenText TagName="TagName.H4" class="rz-mb-0">Identificador Oficina </RadzenText>
+                    </RadzenColumn>
+                    <RadzenColumn>
+                        <RadzenTextBox @bind-Value="OfficeName" style="width: 350px;"> </RadzenTextBox>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="5">
+            <RadzenCard>
+                <RadzenRow>
+                    <RadzenColumn>
+                        <RadzenText TagName="TagName.H5" class="rz-mb-0">Cantidad de Puestos de Atencion </RadzenText>
+                    </RadzenColumn>
+                    <RadzenColumn>
+                        <RadzenNumeric @bind-Value="_postCount" Min="1" Step="1" Format="N0" style="width: 350px;"> </RadzenNumeric>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="2" >
+            <RadzenCard>
+                <RadzenButton style="width: 100%;" Click="CreateOffice" >
+                    <RadzenText TagName="TagName.H5" class="rz-mb-0" style="color: white;">Agregar Oficina</RadzenText>
+                </RadzenButton>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenCard>
+        
+
+@code {
+    
+    private int _postCount = 1;
+    public string? OfficeName;
+    static readonly HttpClient Client = new HttpClient();
+    
+    private static List<ClientOfficeDTO>? _offices = new List<ClientOfficeDTO>();
+    
+    async Task ReloadOfficeList(){
+        //conseguimos todas las oficinas desde CommercialOffice
+        try{
+            //we ask the service McThingy from the API-Gateway to resolve the service discovery endpoint for us
+            string response = await Client.GetStringAsync("http://localhost:5283/getAllOffices");
+
+            _offices = JsonConvert.DeserializeObject<List<ClientOfficeDTO>>(response);
+
+            //Le avisamos al componente que se re-renderize dado que su estádo ha cambiado
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+
+    public RadzenDataGrid<ClientOfficeDTO>? DataGrid { get; private set; }
+
+    protected override async Task OnInitializedAsync(){
+       await ReloadOfficeList();
+    }
+    
+    async Task CreateOffice()
+    {
+        try
+        {
+            
+            if (OfficeName != null)
+            {
+                HttpResponseMessage? response = null;
+                InvokeAsync(async () =>
+                {
+                    response = await Client.PostAsJsonAsync("http://localhost:5283/create-office", new { id = OfficeName, positionsAmount = _postCount });
+                    DialogService.Close();
+                });
+                await BusyDialog("Espere...");
+                
+                
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    await ReloadOfficeList();
+                    await DialogService.OpenAsync("Mensaje", ds =>
+                        @<RadzenStack Gap="1.5rem">
+                            <p>Oficina creada con exito</p>
+                            <RadzenButton Text="Ok" Click="() => ds.Close()" Style="width: 80px;" />
+                        </RadzenStack>);
+                }
+                else
+                {
+                    string errorMessage = "";
+
+                    switch (response.StatusCode)
+                    {
+                        case HttpStatusCode.BadRequest:
+                            errorMessage = "Request Invalido, por favor intente de nuevo.";
+                            break;
+                        case HttpStatusCode.InternalServerError:
+                            errorMessage = "Error de Servidor Interno, por favor intente mas tarde.";
+                            break;
+                        default:
+                            errorMessage = "Error Desconocido, por favor intente mas tarde.";
+                            break;
+                    }
+
+                    await DialogService.OpenAsync("Error", ds =>
+                        @<RadzenStack Gap="1.5rem">
+                            <p>@errorMessage</p>
+                            <RadzenButton Text="Ok" Click="() => ds.Close()" Style="width: 80px;" />
+                        </RadzenStack>);
+                }
+
+                OfficeName = null;
+            }
+            else
+            {
+                await DialogService.OpenAsync("Error", ds =>
+                    @<RadzenStack Gap="1.5rem">
+                        <p>Error: Office name cannot be null.</p>
+                        <RadzenButton Text="Ok" Click="() => ds.Close()" Style="width: 80px;" />
+                    </RadzenStack>);
+            }
+        }
+        catch(Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+
+    // Busy dialog from string
+    async Task BusyDialog(string message)
+    {
+        await DialogService.OpenAsync("", ds =>
+        {
+            RenderFragment content = b =>
+            {
+                b.OpenElement(0, "RadzenRow");
+
+                b.OpenElement(1, "RadzenColumn");
+                b.AddAttribute(2, "Size", "12");
+
+                b.AddContent(3, message);
+
+                b.CloseElement();
+                b.CloseElement();
+            };
+            return content;
+        }, new DialogOptions() { ShowTitle = false, Style = "min-height:auto;min-width:auto;width:auto", CloseDialogOnEsc = false });
+    }
+}
