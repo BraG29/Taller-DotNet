@@ -42,11 +42,13 @@ public class ApiGatewayController : Controller
     }
 
     [HttpPost]
-    [Route("register")]
+    [Route("/register")]
     public async Task<IActionResult> SignUp([FromBody] RegisterRequest request)
     {
         try
         {
+            Console.WriteLine("I am Register From API-Gateway Controller, and I AM ABOUT to register a user ");
+
             var response = await _authenticationService.CallRegister(request);
             return Ok(response);
         }
