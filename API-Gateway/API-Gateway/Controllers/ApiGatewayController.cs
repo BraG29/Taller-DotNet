@@ -102,8 +102,8 @@ public class ApiGatewayController : Controller
 
 
     [HttpPut]
-    [Route("/registerUser/{userCi}/{officeId}")]
-    public async Task<HttpResponseMessage> RegisterUser(string userCi, string officeId){
+    [Route("/registerClient/{userCi}/{officeId}")]
+    public async Task<HttpResponseMessage> RegisterClient(string userCi, string officeId){
 
         //Console.WriteLine("I am Api-Gateway Controller and I got String Content: " +  data.ReadAsStringAsync());
         Console.WriteLine("I am Api-Gateway Controller and I got String Content: " + userCi +" / "+ officeId);

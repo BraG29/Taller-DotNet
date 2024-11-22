@@ -19,8 +19,7 @@
                         <RadzenRequiredValidator Component="CI"  Text="Porfavor ingrese la Cedula" Popup="true" Style="position: absolute" />
 
                     </RadzenFormField>
-
-              
+                    
                 </RadzenRow>
 
                 <RadzenRow>
@@ -63,8 +62,8 @@
         //we try to make the HTTP call to the API-Gateway's controller
         try{
             Console.WriteLine("dentro del Submit tengo acceso a los siguientes datos:" + client.Ci +" / "+OfficeId);
-
-            var result = await http.PutAsync("http://localhost:5283/registerUser/" + client.Ci + "/" + OfficeId,null);
+            
+            var result = await http.PutAsync("http://localhost:5283/registerClient/" + client.Ci + "/" + OfficeId,null);
 
             if (result.StatusCode.Equals(System.Net.HttpStatusCode.OK)){
                 SwapAlertVisibility(true);

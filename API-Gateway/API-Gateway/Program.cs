@@ -4,6 +4,7 @@ using API_Gateway.Client.Pages;
 using API_Gateway.Components;
 using API_Gateway.Hub;
 using API_Gateway.Services;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -90,7 +91,14 @@ builder.Services.AddHttpClient<QualityManagementService>(static client =>
     client.BaseAddress = new("http://quality-management");
 });
 
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.Expiration = TimeSpan.Zero;
+});
+
 builder.Services.AddControllers();
+
+builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -152,6 +160,7 @@ app.UseAntiforgery();
 app.MapControllers();
 
 app.MapRazorComponents<App>()
+    .DisableAntiforgery()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Counter).Assembly);

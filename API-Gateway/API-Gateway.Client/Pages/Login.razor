@@ -1,0 +1,122 @@
+﻿@page "/login"
+@using System.Security.Claims
+@using System.Text.Json
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+@* @inject HttpClient httpClient *@
+
+<h3>Login</h3>
+
+
+<RadzenTemplateForm TItem="Model" Data=@model Submit=@OnSubmit InvalidSubmit=@OnInvalidSubmit>
+    <RadzenStack Gap="1rem" class="rz-p-sm-12">
+        <RadzenFormField Text="Username" Variant="@variant">
+            <ChildContent>
+                <RadzenTextBox Name="Username" @bind-Value=@model.Username/>
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="Username" Text="Username is required."/>
+            </Helper>
+        </RadzenFormField>
+        <RadzenFormField Text="Password" Variant="@variant">
+            <ChildContent>
+                <RadzenPassword Name="Password" @bind-Value=@model.Password/>
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="Password" Text="Password is required."/>
+            </Helper>
+        </RadzenFormField>
+        <RadzenButton ButtonType="ButtonType.Submit" Text="Submit"></RadzenButton>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+
+    Variant variant = Variant.Outlined;
+    
+    class Model
+    {
+        public string Username;
+        public string Password;
+    }
+
+    class ReceivedToken
+    {
+        public string token { get; set; }
+    }
+
+    Model model = new();
+
+    HttpClient httpClient = new();
+    
+    async void OnSubmit(Model model)
+    {
+
+        var requestData = new
+        {
+            Username = model.Username,
+            Password = model.Password
+        };
+        
+        var response = await httpClient.PostAsJsonAsync("http://localhost:5283/api-gateway/login", requestData);
+
+        if (!response.IsSuccessStatusCode) return;
+        
+        var value = await response.Content.ReadAsStringAsync();
+        
+        ReceivedToken receivedMessage = JsonSerializer.Deserialize<ReceivedToken>(value);
+        
+        string jwt = receivedMessage.token;
+        string jwtPayload = DecodeJwt(jwt);
+        var taskJwt = localStorage.SetItemAsync("token", jwt);
+        
+        var payloadObject = JsonSerializer.Deserialize<JsonElement>(jwtPayload);
+        
+        if (payloadObject.TryGetProperty(ClaimTypes.Role, out var roleProperty))
+        {
+            string role = roleProperty.GetString();
+            await localStorage.SetItemAsync("role", role);
+        }
+        else
+        {
+            Console.WriteLine("El atributo 'role' no se encontró en el payload.");
+        }
+
+        await taskJwt;
+    }
+
+    void OnInvalidSubmit(FormInvalidSubmitEventArgs args)
+    {
+        
+    }
+    private static string DecodeJwt(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            throw new ArgumentException("El token no puede ser nulo o vacío.");
+
+        // Divide el JWT en sus tres partes (header, payload, signature)
+        var parts = token.Split('.');
+        if (parts.Length != 3)
+            throw new ArgumentException("El token no tiene el formato esperado.");
+
+        // Decodifica el payload (la segunda parte del JWT)
+        var payload = parts[1];
+        var jsonPayload = Base64UrlDecode(payload);
+
+        return jsonPayload;
+    }
+    
+    
+    private static string Base64UrlDecode(string input)
+    {
+        string base64 = input.Replace('-', '+').Replace('_', '/');
+        switch (base64.Length % 4)
+        {
+            case 2: base64 += "=="; break;
+            case 3: base64 += "="; break;
+        }
+        var bytes = Convert.FromBase64String(base64);
+        return System.Text.Encoding.UTF8.GetString(bytes);
+    }
+
+}
