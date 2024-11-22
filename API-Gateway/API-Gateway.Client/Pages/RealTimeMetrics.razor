@@ -1,0 +1,201 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client;
+@inject IJSRuntime JS
+@page "/realTimeMetrics/{officeId}"
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorage
+
+<h3>Metricas en tiempo real para la oficina @officeId</h3>
+
+<body>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+
+    <style>
+
+        .chartContainer {
+        width: 100%; /* Ocupa todo el ancho de la columna */
+        height: 300px; /* Altura fija para las gráficas */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        margin: 10px 0; /* Espaciado entre las gráficas */
+        }
+
+        .tooltip {
+        position: relative;
+        display: inline-block;
+        }
+
+    </style>
+
+
+    <RadzenCard>
+        <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Start">
+            <RadzenColumn Width="33%">
+                <div class="chartContainer">
+                    <h3>Clientes en la cola</h3>
+                    <canvas id="usersInQueueChart"></canvas>
+                </div>
+            </RadzenColumn>
+
+            <RadzenColumn Width="33%">
+                <div class="chartContainer">
+                    <h3>Puestos libres</h3>
+                    <canvas id="positionsReleasedChart"></canvas>
+                </div>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenCard>
+
+
+
+    <script>
+
+        var charts = {};
+
+        function updateChart(canvasId, value) {
+            if (!charts[canvasId]) {
+                // Crear una gráfica si no existe
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                charts[canvasId] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [new Date()],
+                        datasets: [{
+                            label: canvasId === "usersInQueueChart" ? "Clientes en espera" : "Puestos libres",
+                            data: [value],
+                            borderColor: 'rgb(75, 192, 192)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: { unit: 'second' },
+                                ticks: { autoSkip: true }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                suggestedMax: value + 5
+                            }
+                        }
+                    }
+                });
+            } else {
+                // Actualizar gráfica existente
+                const chart = charts[canvasId];
+                chart.data.labels.push(new Date());
+                chart.data.datasets[0].data.push(value);
+
+                // Limitar número de puntos visibles (opcional)
+                if (chart.data.labels.length > 20) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                }
+
+                chart.update();
+            }
+        }
+
+    </script>
+
+</body>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(! await localStorage.ContainKeyAsync("token")) navigationManager.NavigateTo("/login");
+    }
+    
+    [Parameter]
+    public string officeId { get; set; }
+
+    HubConnection _connection;
+
+    protected override async Task OnInitializedAsync(){
+
+        //nos conectamos el Hub del API-Gateway
+        _connection = new HubConnectionBuilder().WithUrl("http://localhost:5283/connection")
+        .WithAutomaticReconnect()
+        .Build();
+
+        try
+        {
+            await _connection.StartAsync();
+            Console.WriteLine("Conexion al hub");
+            _connection.On<int[]>("ClientLeavesQueue" + officeId, (metrics) =>
+            {
+                if (metrics.Length >= 2)
+                {
+                    int queueLength = metrics[0]; // Clientes en la cola
+                    int freePositions = metrics[1]; // Puestos libres
+
+                    Console.WriteLine($"Cliente dejó la cola de la oficina {officeId}. Clientes: {queueLength}, Puestos libres: {freePositions}");
+
+                    // Actualizamos ambas gráficas
+                    UpdateChart(queueLength);
+                    UpdatePositionChart(freePositions);
+                }
+                else
+                {
+                    Console.WriteLine($"Datos incompletos recibidos para la oficina {officeId}: {string.Join(", ", metrics)}");
+                }
+            });
+
+            _connection.On<int[]>("ClientEnterQueue" + officeId, (metrics) =>
+            {
+                if (metrics.Length >= 1) // Valida que al menos haya un valor
+                {
+                    int queueLength = metrics[0];
+                    Console.WriteLine($"Cliente entró a la cola de la oficina {officeId}. Clientes: {queueLength}");
+
+                    UpdateChart(queueLength);
+                }
+                else
+                {
+                    Console.WriteLine($"Datos incompletos recibidos para la oficina {officeId}: {string.Join(", ", metrics)}");
+                }
+            });
+
+            _connection.On<int[]>("PositionReleased" + officeId, (metrics) =>
+            {
+
+                int freePositions = metrics[0];
+                Console.WriteLine($"Se liberó una posición en la oficina {officeId}. Puestos libres: {freePositions}");
+
+                UpdatePositionChart(freePositions);
+
+            });
+
+            InvokeAsync(StateHasChanged);
+        }
+
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+
+    }
+
+    private async Task UpdateChart(int queue)
+    {
+        Console.WriteLine("Actualizando gráfico de cola");
+        await JS.InvokeVoidAsync("updateChart", "usersInQueueChart", queue);
+        StateHasChanged();
+    }
+
+    private async Task UpdatePositionChart(int positions)
+    {
+        Console.WriteLine("Actualizando gráfico de posiciones libres");
+        await JS.InvokeVoidAsync("updateChart", "positionsReleasedChart", positions);
+        StateHasChanged();
+    }
+
+}

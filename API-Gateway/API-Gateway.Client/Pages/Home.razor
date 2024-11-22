@@ -3,6 +3,8 @@
 @using API_Gateway_Client.DTOs
 @using Newtonsoft.Json;
 @inject NavigationManager NavigationManager
+@inject HttpClient httpClient
+@inject ILocalStorageService localStorage
 
 <PageTitle>Home</PageTitle>
 
@@ -26,36 +28,33 @@
 <RadzenButton Click="@ButtonClicked" Text="Actualizar Lista de Monitores"></RadzenButton>
 
 @code{
-
-    static readonly HttpClient client = new HttpClient();
-
-    IList<OfficeDTO> offices = new List<OfficeDTO>();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine("Header Auth: " + httpClient.DefaultRequestHeaders.Authorization);
+        if(! await localStorage.ContainKeyAsync("token")) NavigationManager.NavigateTo("/login");
+    }
+    //we initialize the few things we're gonna use most importantly the HubConnection
+    private HubConnection _connection;
+    // static readonly HttpClient client = new HttpClient();
+    IList<ClientOfficeDTO> offices = new List<ClientOfficeDTO>();
 
     //Cuando se inicializa el componente:
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync(){
         ReloadOfficeList();
-
     }
 
-    void ButtonClicked()
-    {
-        //TODO: chekc if I can find a way of routing this page dinamically :7
-        //Console.WriteLine(NavigationManager.GetUriWithQueryParameter("clientMonitor", offices[0].Identificator));
-
+    //function that gets called when the only buttion in the page is pressed down
+    void ButtonClicked(){
         ReloadOfficeList();
-        //Console.WriteLine(NavigationManager.ToAbsoluteUri("/monitorClient/" + offices[0].Identificator));
-
     }
 
-    async void ReloadOfficeList()
-    {
+    async void ReloadOfficeList(){
         //conseguimos todas las oficinas desde CommercialOffice
-        try
-        {
-            string response = await client.GetStringAsync("http://localhost:5030/office/getAllOffices");
+        try{
+            //we ask the service McThingy from the API-Gateway to resolve the service discovery endpoint for us
+            string response = await httpClient.GetStringAsync("/getAllOffices");
 
-            offices = JsonConvert.DeserializeObject<List<OfficeDTO>>(response);
+            offices = JsonConvert.DeserializeObject<List<ClientOfficeDTO>>(response);
 
             //Le avisamos al componente que se re-renderize dado que su estádo ha cambiado
             InvokeAsync(StateHasChanged);

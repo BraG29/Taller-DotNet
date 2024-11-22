@@ -12,7 +12,7 @@ using Quality_Management.DataAccess;
 namespace Quality_Management.Migrations
 {
     [DbContext(typeof(QualityManagementDbContext))]
-    [Migration("20241107181801_Create Procedure table")]
+    [Migration("20241108194651_Create Procedure table")]
     partial class CreateProceduretable
     {
         /// <inheritdoc />
@@ -57,6 +57,11 @@ namespace Quality_Management.Migrations
                     b.Property<DateTime>("ProcedureStart")
                         .HasColumnType("datetime2")
                         .HasColumnName("procedure_start");
+
+                    b.Property<string>("WaitTime")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("wait_time");
 
                     b.Property<string>("office")
                         .IsRequired()

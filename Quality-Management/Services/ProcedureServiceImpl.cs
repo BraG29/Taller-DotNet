@@ -37,9 +37,9 @@ namespace Quality_Management.Services
             
             try
             {
-                Procedure procedure = new Procedure(0, _officeRepository.FindById(procedureDTO.OfficeId), procedureDTO.PlaceNumber, procedureDTO.ProcedureStart);
+                Procedure procedure = new Procedure(0, _officeRepository.FindById(procedureDTO.OfficeId), procedureDTO.PlaceNumber, procedureDTO.ProcedureStart,
+                    procedureDTO.WaitTime);
 
-                //devolver id generado
                 return await _procedureRepository.Save(procedure);
             }
             catch (DbUpdateException ex)
@@ -86,16 +86,94 @@ namespace Quality_Management.Services
             }
         }
 
-        //cant tramites x oficina
-        //tiempo promedio tramites x oficina
-        public Task<long> ProceduresAmount(string officeId)
-        {
-            throw new NotImplementedException();
-        }
 
-        public Task<double> ProceduresAverageTime(string officeId)
+        //Funcion general de obtencion de metricas
+        public async Task<IList<ProcedureMetricsDTO>> RetroactiveMetricsData(string officeId, TimeRange range)
         {
-            throw new NotImplementedException();
+
+            if (officeId == null)
+            {
+                throw new ArgumentNullException($"Identificador vacio");
+            }
+
+            //Dependiendo del caso obtengo datos desde 7 dias atras respecto a la fecha actual, hasta 1 año.
+            DateTime startDate = range switch //Fecha desde la cual comienza la busqueda
+            {
+                TimeRange.LastWeek => DateTime.Now.AddDays(-7).Date,
+                TimeRange.LastMonth => DateTime.Now.AddMonths(-1),
+                TimeRange.LastYear => DateTime.Now.AddYears(-1),
+                _ => DateTime.MinValue //Este valor funcionaria como una consulta historica al no marcar limite de rango
+            };
+
+            DateTime endDate = DateTime.Now.Date;//Fecha actual del sistema
+
+            IList<Procedure> procedures = await _procedureRepository.FindProceduresByOfficeAndDate(officeId, startDate, endDate);
+            
+            if(procedures == null)
+            {
+                throw new ArgumentNullException($"No se encontró la oficina");
+            }
+
+            var interval = GetGroupingIntervalByTimeRange(range);
+
+            //Agrupo los datos de las fechas en diario, semanal y mensual
+            var proceduresGroup = procedures.GroupBy(procedure => interval switch {
+                GroupingInterval.Daily => procedure.ProcedureStart.Date,
+                GroupingInterval.Weekly => StartOfWeek(procedure.ProcedureStart),
+                GroupingInterval.Monthly => new DateTime(procedure.ProcedureStart.Year, procedure.ProcedureStart.Month, 1),
+                _ => procedure.ProcedureStart.Date
+            });
+
+            var metricsList = new List<ProcedureMetricsDTO>();
+
+            foreach (var procedureGrouped in proceduresGroup)
+            {
+
+                TimeSpan totalWaitTime = TimeSpan.Zero;
+                TimeSpan total = TimeSpan.Zero;
+
+                int validDate = 0; //contador para fechas validas
+
+
+                foreach (var procedure in procedureGrouped)
+                {
+
+                    DateTime start = procedure.ProcedureStart;
+                    DateTime end = procedure.ProcedureEnd;
+
+                    if (start != DateTime.MinValue || end != DateTime.MinValue)
+                    {
+                        TimeSpan duration = end - start;
+
+                        total += duration;
+                        validDate++;
+                    }
+
+                    // Sumatoria de tiempos de espera
+                    if (TimeSpan.TryParse(procedure.WaitTime, out TimeSpan waitTime))
+                    {
+                        totalWaitTime += waitTime;
+                    }
+
+                }
+
+                //Realizo un promedio utilizando los ticks del total y divido entre las fechas validas,
+                //omitiendo fechas invalidas, ej: valores por defecto.
+                TimeSpan averageTime = validDate > 0 ? new TimeSpan(total.Ticks / validDate) : TimeSpan.Zero;
+
+                //Promedio del tiempo de espera
+                TimeSpan averageWaitTime = validDate > 0 ? new TimeSpan(totalWaitTime.Ticks / validDate) : TimeSpan.Zero;
+
+                metricsList.Add(new ProcedureMetricsDTO
+                {
+                    IntervalDate = procedureGrouped.Key,
+                    ProcedureAverageWaitTime = averageWaitTime.ToString(@"hh\:mm\:ss"),
+                    ProcedureAverageDurationTime = averageTime.ToString(@"hh\:mm\:ss"),
+                    ProcedureCount = validDate
+                });
+            }
+
+            return metricsList;
         }
 
 
@@ -108,84 +186,54 @@ namespace Quality_Management.Services
             {
                 throw new ArgumentNullException($"El tramite no existe");
             }
-            
-            //id ,  office, place, start, end.
+
+            //id   office, place, start, end.
+
             ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.Office.OfficeId,
-                procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd);
+                procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd,
+                procedure.WaitTime);
 
             return procedureDTO;
         }
 
-    }
 
-}
 
-/*
-public async Task DeleteProcedure(long procedureId)
-{
+        //Funciones auxiliares:
 
-    try
-    {
-        var procedure = await _procedureRepository.FindById(procedureId);
-
-        if (procedure == null)
+        /// <summary>
+        /// Esta funcion obtiene la fecha de inicio de la semana a la que pertenece una fecha. Para agrupar datos semanalmente.
+        /// </summary>
+        /// <param name="date"> Fecha de la que se quiere obtener la semana</param>
+        /// <returns> La fecha del dia lunes de esa semana</returns>
+        public static DateTime StartOfWeek(DateTime date)
         {
-            throw new ArgumentNullException($"El tramite no existe");
+            DayOfWeek startOfWeek = DayOfWeek.Monday;
+
+            int diff = (7 + (date.DayOfWeek - startOfWeek)) % 7;
+            return date.AddDays(-1 * diff).Date;
+        }
+        
+        /// <summary>
+        /// Esta funcion se asegura de aplicar el siguiente formato de intervalos de acuerado al rango de informacion
+        /// de la siguiente manera: Ultima semana se agrupa en dias, Ultimo mes se agrupa en semanas y 
+        /// ultimo año se agrupa en meses.
+        /// </summary>
+        /// <param name="range"> Recibe el rango de tiempo </param>
+        /// <returns>Devuelve el intervalo en el que se agrupan los datos</returns>
+        public static GroupingInterval GetGroupingIntervalByTimeRange(TimeRange range)
+        {
+            return range switch
+            {
+                TimeRange.LastWeek => GroupingInterval.Daily,
+                TimeRange.LastMonth => GroupingInterval.Weekly,
+                TimeRange.LastYear => GroupingInterval.Monthly,
+                _ => GroupingInterval.Daily
+            };
         }
 
-        await _procedureRepository.Delete(procedure);
-    }
-    catch (DbUpdateException ex)
-    {
-        throw new DbUpdateException(ex.ToString());
+
     }
 
 }
 
-}
-
-public async Task<IList<ProcedureDTO>> GetAll()
-{
-    try
-    {
-        var procedureList = await _procedureRepository.FindAll();
-
-        ProcedureDTO procedureDTO;
-        IList<ProcedureDTO> procedureDTOList = new List<ProcedureDTO>();
-
-        foreach (Procedure procedure in procedureList)
-        {
-
-            procedureDTO = new ProcedureDTO(procedure.Id, procedure.OfficeId,
-                procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd);
-
-            procedureDTOList.Add(procedureDTO);
-        }
-
-        return procedureDTOList;
-    }
-    catch(Exception ex) {
-
-        throw new Exception(ex.ToString());
-
-    }
-}
-
-public async Task<ProcedureDTO> GetProcedure(long procedureId)
-{
-
-    var procedure = await _procedureRepository.FindById(procedureId);
-
-    if (procedure == null)
-    {
-        throw new ArgumentNullException($"El tramite no existe");
-    }
-
-    //id ,  office, place, start, end.
-    ProcedureDTO procedureDTO = new ProcedureDTO(procedure.Id, procedure.OfficeId,
-        procedure.PlaceNumber, procedure.ProcedureStart, procedure.ProcedureEnd);
-
-    return procedureDTO;
-}
-*/
 
