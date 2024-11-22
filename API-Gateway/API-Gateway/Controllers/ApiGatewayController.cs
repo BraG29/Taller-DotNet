@@ -57,7 +57,7 @@ public class ApiGatewayController : Controller
     }
     
     [HttpPost]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN")]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN")]
     [Route("/create-office")]
     public async Task<ActionResult> CreateOffice([FromBody] OfficeDTO office)
     {

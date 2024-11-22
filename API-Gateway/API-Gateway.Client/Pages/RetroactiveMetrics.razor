@@ -157,24 +157,6 @@
 
     private List<ProcedureMetricsDTO> metricsDTOs = new();
 
-    private bool isSpanVisible1 = false;
-    private bool isSpanVisible2 = false;
-    private bool isSpanVisible3 = false;
-
-    private void ShowSpan(int buttonId)
-    {
-        if (buttonId == 1) isSpanVisible1 = true;
-        if (buttonId == 2) isSpanVisible2 = true;
-        if (buttonId == 3) isSpanVisible3 = true;
-    }
-
-    private void HideSpan(int buttonId)
-    {
-        if (buttonId == 1) isSpanVisible1 = false;
-        if (buttonId == 2) isSpanVisible2 = false;
-        if (buttonId == 3) isSpanVisible3 = false;
-    }
-
     //cuando se presiona un boton se llama a esta funcion, encargada de pedir nuevos datos en el intervalo pedido.
     private async Task OnIntervalSelected(int interval)
     {
