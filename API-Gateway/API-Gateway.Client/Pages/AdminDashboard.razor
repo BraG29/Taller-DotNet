@@ -88,7 +88,6 @@
         //conseguimos todas las oficinas desde CommercialOffice
         try{
             //we ask the service McThingy from the API-Gateway to resolve the service discovery endpoint for us
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {await localStorage.GetItemAsStringAsync("token")}");
             string response = await httpClient.GetStringAsync("/getAllOffices");
 
             _offices = JsonConvert.DeserializeObject<List<ClientOfficeDTO>>(response);
@@ -118,7 +117,6 @@
                 HttpResponseMessage? response = null;
                 InvokeAsync(async () =>
                 {
-                    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {await localStorage.GetItemAsStringAsync("token")}");
                     response = await httpClient.PostAsJsonAsync("/create-office", new { id = OfficeName, positionsAmount = _postCount });
                     DialogService.Close();
                 });

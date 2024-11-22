@@ -59,7 +59,7 @@ public class ApiGatewayController : Controller
     }
     
     [HttpPost]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN")]
+    // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN")]
     [Route("/create-office")]
     public async Task<ActionResult> CreateOffice([FromBody] OfficeDTO office)
     {
@@ -89,7 +89,7 @@ public class ApiGatewayController : Controller
 
     [HttpGet]
     [Route("/getAllOffices")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN,MANAGER")]
+    // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN,MANAGER")]
     public async Task<IList<ClientOfficeDTO>> GetAllOffices(){
          
          return await _commercialOfficeService.CallGetAllOffice();
@@ -98,7 +98,7 @@ public class ApiGatewayController : Controller
     //🐎
     [HttpGet]
     [Route("/getRetroactiveMetrics/{officeId}/{interval}")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "MANAGER")]
+    // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "MANAGER")]
     public async Task<IList<ProcedureMetricsDTO>> GetRetroactiveMetrics(string officeId, long interval){
 
         return await _qualityManagementService.CallGetRetroactiveMetrics(officeId, interval);
