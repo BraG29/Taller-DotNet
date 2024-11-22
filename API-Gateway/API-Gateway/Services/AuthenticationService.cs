@@ -18,6 +18,8 @@ public class AuthenticationService(HttpClient httpClient)
 
     public async Task<string> CallRegister(RegisterRequest request)
     {
+        Console.WriteLine("I am CallRegister from AuthenticationService, and I AM ABOUT to register a user ");
+
         if (request.Role < 0 || request.Role > 1) throw new ArgumentException("No existe el rol eligido");
         if (string.IsNullOrWhiteSpace(request.Username)) throw new ArgumentException("El username es requerido");
         if( request.Password == null || request.Password.Length < 4) 
