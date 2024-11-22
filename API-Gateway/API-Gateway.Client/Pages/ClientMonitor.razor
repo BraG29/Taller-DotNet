@@ -1,5 +1,7 @@
 ﻿@page "/clientMonitor/{office}"
 @using Microsoft.AspNetCore.SignalR.Client;
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorage
 
 
 
@@ -64,6 +66,11 @@
 
 
 @code {
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(! await localStorage.ContainKeyAsync("token")) navigationManager.NavigateTo("/login");
+    }
 
     //creamos el hub con el que nos conectaremos
     HubConnection _connection;
@@ -79,25 +86,35 @@
     [Parameter]
     public string office { get; set; }
 
+    //el diccionario que usaremos para guardar los datos de los usuarios que nos van llegando
     static IDictionary<long,Client> clients = new Dictionary<long,Client>();
 
-    //ICollection<<IDictionary<long, Client>> clientEnumerable = new List<IDictionary<long, Client>> { clients };
-    //IEnumerable<IDictionary<long, Client>> clientEnumerable = new Dictionary<long,object>();
-
+    //Creamos una Colección a partir de los datos del diccionario
+    // (debido a que se puede conseguir fácilmente un IEnumerable de esta manera)
     ICollection<Client> data = clients.Values;
-    //IQueryable<Client> clientQueryable;
-    //ICollection<Client> data = clientEnumerable.First().Values;
+
 
     protected override async Task OnInitializedAsync(){
         
-        Console.WriteLine("Se inicializó el componente del monitor en API Gateway");
 
-        //TODO: update this hub with the thingy service discovery from Aspire
-        _connection = new HubConnectionBuilder().WithUrl("http://localhost:5030/commercial-office/hub").Build();
 
-        _connection.On("RefreshMonitor"+office, (string userId, long post, string officeId) =>
+        //nos conectamos el Hub del API-Gateway
+        _connection = new HubConnectionBuilder().WithUrl("http://localhost:5283/connection")
+        .WithAutomaticReconnect()
+        .Build();
+
+        try{
+            await _connection.StartAsync();
+            Console.WriteLine("Me conecté al hub del API Gateway principal");
+        }
+
+        catch (Exception e){
+            throw new Exception(e.Message);
+        }
+        
+        _connection.On("RefreshMonitorClient"+office, (string userId, long post, string officeId) =>
         {
-            Console.WriteLine($"Datos recibidos mediante SignalR: {userId}, {post}, {officeId}");
+            Console.WriteLine($"Datos recibidos mediante SignalR: {userId}, {post}, {officeId}" + _connection.State.ToString());
 
             Client model = new Client();
 
@@ -120,6 +137,6 @@
             InvokeAsync(StateHasChanged);
         });
 
-        await _connection.StartAsync();
+        //await _connection.StartAsync();
     }
 }

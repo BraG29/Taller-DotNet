@@ -1,0 +1,212 @@
+﻿@using System.Text.Json;
+@inject NavigationManager NavigationManager;
+@page "/UserSignUp"
+<div class="rz-p-0 rz-p-md-12">
+    <h1>Registro de Usuario</h1>
+    <RadzenStack  AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-p-sm-12">
+
+
+        <RadzenCard Variant="Variant.Filled"  class="rz-p-0" Style="width: 50%; overflow: hidden; height:50%;" >
+            <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Gap="1rem" Wrap="FlexWrap.Wrap">
+
+
+            <RadzenTemplateForm TItem="Model" Data="@model" Submit="@OnSubmit">
+
+            <RadzenRow>
+
+                <RadzenFormField Text="Usuario" Variant="Variant.Outlined">
+                    <Start>
+                        <RadzenIcon Icon="account_circle" />
+                    </Start>
+                    <ChildContent>
+                        <RadzenTextBox Name="UsernameComponent" @bind-Value=@model.Username />
+                        <RadzenRequiredValidator Component="UsernameComponent" Text="Porfavor ingrese el usuario" Popup="true" Style="position: absolute" />
+                    </ChildContent>
+                    <End>
+                        <RadzenIcon Icon="add_circle" IconStyle="IconStyle.Secondary" />
+                    </End>
+                </RadzenFormField>
+
+            </RadzenRow>
+
+            <RadzenRow>
+                <RadzenFormField Text="Password" Variant="Variant.Outlined">
+                    <ChildContent>
+                        <RadzenTextBox  @bind-Value=@model.Password Visible="@(!password)" />
+                        <RadzenPassword Name="PasswordComponent" @bind-Value=@model.Password Visible="@password" />
+
+                        <RadzenRequiredValidator Component="PasswordComponent" Text="Porfavor ingrese la contraseña" Popup="true" Style="position: absolute" />
+
+                    </ChildContent>
+                    <End>
+                        <RadzenButton Icon="@(password ? "visibility" : "visibility_off")" Click="TogglePassword" Variant="Variant.Text" Size="ButtonSize.Small" />
+                    </End>
+
+                </RadzenFormField>
+            </RadzenRow>
+
+            <RadzenRow>
+
+                <RadzenFormField Text="Nombre" Variant="Variant.Outlined">
+                    <Start>
+                        <RadzenIcon Icon="account_circle" />
+                    </Start>
+                    <ChildContent>
+
+                        <RadzenTextBox Name="NameComponent" @bind-Value=@model.Name />
+                        <RadzenRequiredValidator Component="NameComponent" Text="Porfavor ingrese el nombre" Popup="true" Style="position: absolute" />
+
+                    </ChildContent>
+                    <End>
+                        <RadzenIcon Icon="add_circle" IconStyle="IconStyle.Secondary" />
+                    </End>
+                </RadzenFormField>
+            </RadzenRow>
+
+
+            <RadzenRow>
+                <RadzenFormField Text="Apellido" Variant="Variant.Outlined">
+                    <Start>
+                        <RadzenIcon Icon="account_circle" />
+                    </Start>
+                    <ChildContent>
+                        <RadzenTextBox Name="LastNameComponent" @bind-Value=@model.LastName />
+                        <RadzenRequiredValidator Component="LastNameComponent" Text="Porfavor ingrese el apellido" Popup="true" Style="position: absolute" />
+
+                    </ChildContent>
+                    <End>
+                        <RadzenIcon Icon="add_circle" IconStyle="IconStyle.Secondary" />
+                    </End>
+                </RadzenFormField>
+            </RadzenRow>
+
+            <RadzenRow>
+                <RadzenFormField>
+                    <RadzenDropDown @bind-Value=@chosenRole Data=@roles Style="width: 100%; max-width: 400px;" Name="DropDownBindValue" />
+                </RadzenFormField>
+            </RadzenRow>
+
+            <RadzenRow>
+                <RadzenButton Variant="Variant.Flat" ButtonType="ButtonType.Submit" Text="Registrarse" ButtonStyle="ButtonStyle.Primary" />
+            </RadzenRow>
+
+            </RadzenTemplateForm>
+            </RadzenStack>
+        </RadzenCard>
+
+    </RadzenStack>
+
+        <RadzenAlert @bind-Visible="correctAlertVisible">
+            Usuario creado exitosamente, será redireccionado pronto.
+        </RadzenAlert>
+
+        <RadzenAlert @bind-Visible="wrongAlertVisible" AlertStyle="AlertStyle.Danger">
+            No se pudo crear el usuario.
+        </RadzenAlert>
+
+
+</div>
+
+<!--para más documentación, leer aquí: https://blazor.radzen.com/form-field?theme=material3-->
+@code {
+
+    HttpClient http = new HttpClient();
+    //definimos el modelo que vamos a usar para guardar la info de la página
+    class Model
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public int Role { get; set; }
+    }
+    //0 = administratior
+    //1 = manager
+
+    //Lo instanciamos
+    Model model = new Model();
+
+
+    //Lógica del Alert
+    bool correctAlertVisible = false;
+    bool wrongAlertVisible = false;
+
+    ICollection<String> roles = new List<String>();
+    String chosenRole;
+
+    protected override async Task OnInitializedAsync(){
+
+        roles.Add("Administrador");
+        roles.Add("Moderador");
+        chosenRole = new String("Administrador");
+    }
+
+
+    void SwapAlertVisibility(bool correct)
+    {
+        if (correct)
+        {
+            correctAlertVisible = !correctAlertVisible;
+        }
+        else
+        {
+            wrongAlertVisible = !wrongAlertVisible;
+        }
+
+    }
+
+    async void OnSubmit(){
+
+
+
+        try{
+
+            if (chosenRole.Equals("Administrador")){
+
+                this.model.Role = 0;
+            }
+            else{
+                this.model.Role = 1;
+            }
+
+            HttpContent data = JsonContent.Create(model);
+
+            Console.WriteLine("I am UserSignUp, and I AM ABOUT to register a user ");
+
+            var result = await http.PostAsync("http://localhost:5283/register", data);
+
+            if (result.StatusCode.Equals(System.Net.HttpStatusCode.OK)){
+                SwapAlertVisibility(true);
+                NavigationManager.NavigateTo("/login");
+            }
+            else{
+                SwapAlertVisibility(false);
+            }
+
+            InvokeAsync(StateHasChanged);
+
+        }catch(Exception e){
+
+            Console.WriteLine("I am UserSignUp, and I failed to register a user with error: " +e.Message);
+            SwapAlertVisibility(false);
+        }
+    }
+
+    //Lógica del botón
+    bool buttonDisabled;
+
+    void disableButton()
+    {
+        buttonDisabled = !buttonDisabled;
+    }
+
+
+    //lógica del botón de mostrar contraseña
+    bool password = true;
+
+    //escondemos o mostramos la contraseña
+    void TogglePassword()
+    {
+        password = !password;
+    }
+}

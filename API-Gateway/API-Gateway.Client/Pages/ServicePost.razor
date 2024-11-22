@@ -1,0 +1,53 @@
+﻿@page "/ServicePost/{OfficeId}/{PlaceId}"
+@using System.Text
+
+<RadzenCard style="margin-top: 20px;">
+    <RadzenRow>
+        <RadzenColumn Size="2" >
+            <RadzenCard>
+                <RadzenButton style="width: 100%;" Click="NextClient" >
+                    <RadzenText TagName="TagName.H5" class="rz-mb-0" style="color: white;">Cliente Siguiente</RadzenText>
+                </RadzenButton>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="2" >
+            <RadzenCard>
+                <RadzenButton style="width: 100%;" Click="FreePost" >
+                    <RadzenText TagName="TagName.H5" class="rz-mb-0" style="color: white;">Liberar Puesto</RadzenText>
+                </RadzenButton>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenCard>
+
+
+@code {
+    [Parameter]
+    public string OfficeId { get; set; }
+
+    [Parameter]
+    public string PlaceId { get; set; }
+    
+    HttpClient Client = new HttpClient();
+
+    async Task NextClient(){
+        
+        var url = $"http://localhost:5283/nextUser/{OfficeId}/{PlaceId}";
+
+        var content = new StringContent("", Encoding.UTF8, "application/json");
+
+        var response = await Client.PutAsync(url, content);
+        
+    }
+
+    async Task FreePost(){
+
+        var url = $"http://localhost:5283/releasePosition/{OfficeId}/{PlaceId}";
+
+        var content = new StringContent("", Encoding.UTF8, "application/json");
+
+        var response = await Client.PutAsync(url, content);
+        
+    }
+    
+}

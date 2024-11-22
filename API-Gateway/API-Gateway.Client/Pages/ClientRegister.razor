@@ -1,0 +1,104 @@
+﻿@page "/clientRegister/{officeId}"
+@inject HttpClient httpClient
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorage
+
+<RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Orientation="Orientation.Horizontal">
+   
+    <RadzenCard Variant="Variant.Filled" class="rz-p-0" Style="width: 50%; overflow: hidden;" >
+
+        <RadzenStack AlignItems="AlignItems.Center" Style="width: 100%;">
+
+        
+
+            <RadzenText TextStyle="TextStyle.H3"> Registro de puesto</RadzenText>
+
+            <RadzenTemplateForm TItem="Model" Data="@client" Submit="@OnSubmit">
+                <RadzenRow>
+
+                    <RadzenFormField Text="Ingrese su Cedula" Variant="Variant.Filled" Style="width: 100%;">
+
+                            <RadzenTextBox Name="CI" @bind-Value="@client.Ci" />
+                        <RadzenRequiredValidator Component="CI"  Text="Porfavor ingrese la Cedula" Popup="true" Style="position: absolute" />
+
+                    </RadzenFormField>
+                    
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenButton ButtonType="ButtonType.Submit">Registrarse</RadzenButton>
+                </RadzenRow>
+
+            </RadzenTemplateForm>
+            <RadzenAlert @bind-Visible="correctAlertVisible">
+                Se registró el usuario correctamente!
+            </RadzenAlert>
+
+            <RadzenAlert @bind-Visible="wrongAlertVisible" AlertStyle="AlertStyle.Danger">
+                No se ha podido registrar el usuario.
+            </RadzenAlert>
+        </RadzenStack>
+    </RadzenCard>
+
+</RadzenStack>
+
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(! await localStorage.ContainKeyAsync("token")) navigationManager.NavigateTo("/login");
+    }
+    [Parameter]
+    public string OfficeId { get; set; }
+
+    // static readonly HttpClient http = new HttpClient();
+
+    class Model{
+        public string Ci { get; set; }
+    }
+
+    //the model we use for getting the 
+    Model client = new Model();
+
+    //function that gets called onceyou press the button and the validation is complete
+    async void OnSubmit(){
+
+        Console.WriteLine("I am on the Submit function");
+        Console.WriteLine(client.Ci);
+
+        //we try to make the HTTP call to the API-Gateway's controller
+        try{
+            Console.WriteLine("dentro del Submit tengo acceso a los siguientes datos:" + client.Ci +" / "+OfficeId);
+            
+            var result = await httpClient.PutAsync("/registerClient/" + client.Ci + "/" + OfficeId,null);
+
+            if (result.StatusCode.Equals(System.Net.HttpStatusCode.OK)){
+                SwapAlertVisibility(true);
+            }
+            else{
+                SwapAlertVisibility(false);
+            }
+            InvokeAsync(StateHasChanged);
+            Console.WriteLine("I am the ClientRegister page, and I just called Api-Gateway");
+        }
+        catch(Exception e){
+            Console.WriteLine("I am the ClientRegister page, and I got error: " + e.Message);
+        }
+    }
+
+
+    //Lógica del Alert
+    bool correctAlertVisible = false;
+    bool wrongAlertVisible = false;
+
+    //function to swap the visibility of the 2 existing Alert components
+    void SwapAlertVisibility(bool correct)
+    {
+        if (correct){
+            correctAlertVisible = !correctAlertVisible;
+        }
+        else{
+            wrongAlertVisible = !wrongAlertVisible;
+        }
+    }
+}

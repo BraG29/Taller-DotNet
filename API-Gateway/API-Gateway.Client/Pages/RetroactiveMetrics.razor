@@ -1,0 +1,252 @@
+﻿@using API_Gateway_Client.DTOs;
+@inject IJSRuntime JS
+@page "/retroactiveMetrics/{officeId}"
+@inject HttpClient httpClient
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorage
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+    <h2 style="text-align: center ">Metricas retroactivas de la oficina @officeId </h2>
+
+    <style>
+
+        /*width: 30vw;
+                height: 25vh;*/
+        .chartContainer {
+            width: 100%; /* Ocupa todo el ancho de la columna */
+            height: 300px; /* Altura fija para las gráficas */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: 10px 0; /* Espaciado entre las gráficas */
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+    </style>
+
+
+    <RadzenCard>
+        <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Start">
+            <RadzenColumn Width="33%">
+                <div class="chartContainer">
+                    <h3>T. espera promedio</h3>
+                    <canvas id="averageWaitTimeChart"></canvas>
+                </div>
+            </RadzenColumn>
+
+            <RadzenColumn Width="33%">
+                <div class="chartContainer">
+                    <h3>T. promedio duración trámites</h3>
+                    <canvas id="proceduresAverageTimeChart"></canvas>
+                </div>
+            </RadzenColumn>
+
+            <RadzenColumn Width="33%">
+                <div class="chartContainer">
+                    <h3>Cantidad de trámites promedio</h3>
+                    <canvas id="proceduresAvergaeAmountChart"></canvas>
+                </div>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenCard>
+
+    <br />
+    <p>
+        Boton utlima semana: Organiza datos de los ultimos 7 dias. <br />
+        Boton ultimo mes: Organiza los datos semanalmente, comenzando por cada lunes. <br />
+        Boton ultimo año: Organiza los datos en meses. <br />
+        En todos los casos se excluye el dia actual.
+    </p>
+
+    <button class="btn btn-primary me-2" @onclick="() => OnIntervalSelected(0)">
+        Ultima semana
+    </button>
+
+    <button class="btn btn-secondary me-2" @onclick="() => OnIntervalSelected(1)">
+        Ultimo mes
+    </button>
+
+    <button class="btn btn-success" @onclick="() => OnIntervalSelected(2)">
+        Ultimo año
+    </button>
+
+
+    <!-- Este codigo no se borra xd
+        al tke mi rey
+    <button class="btn btn-primary me-2" @onclick="() => OnIntervalSelected(0)" @onmouseover="ShowSpan" @onmouseout="HideSpan">
+        Ultima semana
+        <span style="display: @(isSpanVisible ? "inline" : "none");"> Organiza datos de los ultimos 7 dias </span>
+    </button>
+
+    <button class="btn btn-secondary me-2" @onclick="() => OnIntervalSelected(1)" @onmouseover="ShowSpan" @onmouseout="HideSpan">
+        Ultimo mes
+        <span style="display: @(isSpanVisible ? "inline" : "none");">Organiza los datos semanalmente, comenzando por cada lunes</span>
+    </button>
+
+    <button class="btn btn-success" @onclick="() => OnIntervalSelected(2)" @onmouseover="ShowSpan" @onmouseout="HideSpan">
+        Ultimo año
+        <span style="display: @(isSpanVisible ? "inline" : "none");">Organiza los datos en meses</span>
+    </button>-->
+
+    <script>
+
+        var charts = {}
+
+        function createChart(canvasId, labels, values, interval) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'bar', //tipo de barras
+                data: {
+                    labels: labels,
+                    datasets: [{
+                    label: canvasId === "averageWaitTimeChart" ? 'Tiempo de espera promeido (segundos)' :
+                        canvasId === "proceduresAverageTimeChart" ? 'Tiempo de duracion de tramites promedio (segundos)' :
+                       'Cantidad promedio de tramites',
+                    data: values,
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit:  interval === 0 ? 'day' : interval === 1 ? 'week' : 'month',
+                            parser: 'yyyy-MM-dd', // Formato de las fechas enviadas
+                            displayFormats: {
+                                day: 'MMM d',   // Formato para días
+                                week: 'MMM d',  // Formato para semanas
+                                month: 'MMM yyyy' // Formato para meses
+                            }
+                        },
+                        ticks: {
+                         source: 'data', // Usa las fechas tal cual las proporcionaste
+                        }
+                    },
+                        y: {
+                        beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+    </script>
+</body>
+
+@code {
+
+    [Parameter]
+    public string officeId { get; set; }
+    private long selectedInterval = 0; // inicializo intervalo ultima semana por defecto.
+
+    private List<ProcedureMetricsDTO> metricsDTOs = new();
+
+    //cuando se presiona un boton se llama a esta funcion, encargada de pedir nuevos datos en el intervalo pedido.
+    private async Task OnIntervalSelected(int interval)
+    {
+        selectedInterval = interval;
+        await LoadDataAsync(selectedInterval);
+
+        if (metricsDTOs.Any())
+        {
+            await UpdateChartsAsync();
+        }
+        else
+        {
+            Console.WriteLine("No se encontraron métricas para el intervalo seleccionado.");
+        }
+    }
+
+    //Se gestiona la actualizacion de las graficas
+    private async Task UpdateChartsAsync()
+    {
+        var chartData = new List<(string canvasId, List<string> labels, List<double> values)>
+        {
+            ("averageWaitTimeChart", metricsDTOs.Select(d => d.IntervalDate.ToString("yyyy-MM-dd")).ToList(),
+                metricsDTOs.Select(d => TimeSpan.TryParse(d.ProcedureAverageWaitTime, out var ts) ? ts.TotalSeconds : 0).ToList()),
+            ("proceduresAverageTimeChart", metricsDTOs.Select(d => d.IntervalDate.ToString("yyyy-MM-dd")).ToList(),
+                metricsDTOs.Select(d => TimeSpan.TryParse(d.ProcedureAverageDurationTime, out var ts) ? ts.TotalSeconds : 0).ToList()),
+            ("proceduresAvergaeAmountChart", metricsDTOs.Select(d => d.IntervalDate.ToString("yyyy-MM-dd")).ToList(),
+                metricsDTOs.Select(d => (double)d.ProcedureCount).ToList())
+        };
+
+        foreach (var (canvasId, labels, values) in chartData)
+        {
+            await JS.InvokeVoidAsync("createChart", canvasId, labels, values, selectedInterval);
+        }
+    }
+
+    private async Task LoadDataAsync(long interval)
+    {
+        try //this is where I should meter mano para service discovery
+        {
+            string endpoint = $"/getRetroactiveMetrics/{officeId}/{interval}";
+
+            metricsDTOs = await httpClient.GetFromJsonAsync<List<ProcedureMetricsDTO>>(endpoint);
+            //await Http.GetFromJsonAsync<List<ProcedureMetricsDTO>>(endpoint);
+
+            if (!metricsDTOs.Any())
+            {
+                Console.WriteLine("No se recibieron métricas.");
+            }
+
+            Console.WriteLine("Cargue metricas");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar métricas: {ex.Message}");
+        }
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(! await localStorage.ContainKeyAsync("token")) navigationManager.NavigateTo("/login");
+        if (firstRender)
+        {
+            await LoadDataAsync(selectedInterval);
+
+            if (metricsDTOs.Any())
+            {
+
+                var chartData = new List<(string canvasId, List<string> labels, List<double> values)>
+                {
+                    ("averageWaitTimeChart", metricsDTOs.Select(d => d.IntervalDate.ToString("yyyy-MM-dd")).ToList(),
+                        metricsDTOs.Select(d => TimeSpan.TryParse(d.ProcedureAverageWaitTime, out var ts) ? ts.TotalSeconds : 0).ToList()),
+                    ("proceduresAverageTimeChart", metricsDTOs.Select(d => d.IntervalDate.ToString("yyyy-MM-dd")).ToList(),
+                        metricsDTOs.Select(d => TimeSpan.TryParse(d.ProcedureAverageDurationTime, out var ts) ? ts.TotalSeconds : 0).ToList()),
+                    ("proceduresAvergaeAmountChart", metricsDTOs.Select(d => d.IntervalDate.ToString("yyyy-MM-dd")).ToList(),
+                        metricsDTOs.Select(d => (double)d.ProcedureCount).ToList())
+                };
+
+                foreach (var (canvasId, labels, values) in chartData)
+                {
+                    await JS.InvokeVoidAsync("createChart", canvasId, labels, values, selectedInterval);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Data no disponible");
+            }
+        }
+    }
+}
+

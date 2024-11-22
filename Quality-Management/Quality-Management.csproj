@@ -9,10 +9,13 @@
         <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
 <!--        <InvariantGlobalization>true</InvariantGlobalization>-->
         <RootNamespace>Quality_Management</RootNamespace>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Aspire.StackExchange.Redis" Version="9.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -23,6 +26,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+        <ProjectReference Include="..\DotNET-APP.ServiceDefauts\DotNET-APP.ServiceDefauts.csproj" />
     </ItemGroup>
 
     <ItemGroup>
